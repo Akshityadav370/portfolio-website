@@ -4,15 +4,7 @@ import { heroFacts, profile } from "@/data/resume";
 
 export default function Hero() {
   return (
-    <section className="relative overflow-hidden">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(600px 320px at 70% 10%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 70%)",
-        }}
-      />
+    <section className="relative">
       <div className="relative mx-auto flex min-h-svh max-w-5xl flex-col justify-center px-6 pt-24 pb-16">
         <Reveal>
           <p className="font-mono text-sm text-accent">
