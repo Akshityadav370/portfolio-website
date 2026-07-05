@@ -1,0 +1,217 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - navigation [ref=e3]:
+      - link "~/akshit" [ref=e4] [cursor=pointer]:
+        - /url: "#"
+      - generic [ref=e5]:
+        - link "Experience" [ref=e6] [cursor=pointer]:
+          - /url: "#experience"
+        - link "Projects" [ref=e7] [cursor=pointer]:
+          - /url: "#projects"
+        - link "Skills" [ref=e8] [cursor=pointer]:
+          - /url: "#skills"
+        - link "Contact" [ref=e9] [cursor=pointer]:
+          - /url: "#contact"
+      - link "Resume" [ref=e10] [cursor=pointer]:
+        - /url: /resume.pdf
+  - main [ref=e11]:
+    - generic [ref=e13]:
+      - paragraph [ref=e15]: Software Development Engineer 1 · Frontend @ Zotok AI · Hyderabad, India
+      - heading "I make slow apps fast." [level=1] [ref=e17]
+      - paragraph [ref=e19]: Frontend engineer specializing in React performance — shipping micro-frontends, mobile apps, and AI-powered products. Currently obsessing over load times at Zotok AI.
+      - generic [ref=e21]:
+        - generic [ref=e22]:
+          - paragraph [ref=e23]: 25s → 1.5s
+          - paragraph [ref=e24]: page load @ Zotok
+        - generic [ref=e25]:
+          - paragraph [ref=e26]: −50%
+          - paragraph [ref=e27]: initial JS payload
+        - generic [ref=e28]:
+          - paragraph [ref=e29]: ~35%
+          - paragraph [ref=e30]: faster builds
+      - generic [ref=e32]:
+        - link "See the work" [ref=e33] [cursor=pointer]:
+          - /url: "#experience"
+        - link "Get in touch" [ref=e34] [cursor=pointer]:
+          - /url: mailto:akshit07032001@gmail.com
+    - generic [ref=e35]:
+      - generic [ref=e36]:
+        - paragraph [ref=e37]: 01 · experience
+        - heading "Where I've worked" [level=2] [ref=e38]
+      - generic [ref=e40]:
+        - article [ref=e42]:
+          - generic [ref=e43]:
+            - generic [ref=e44]:
+              - heading "Software Development Engineer 1 — Frontend" [level=3] [ref=e45]
+              - paragraph [ref=e46]: Zotok AI
+            - paragraph [ref=e47]: Jan 2026 — Present · Onsite
+          - list [ref=e48]:
+            - listitem [ref=e49]:
+              - generic [ref=e50]: ▸
+              - generic [ref=e51]: Cut initial page load from 25–30s to ~1.5s and build time by ~35% across a micro-frontend React app.
+            - listitem [ref=e52]:
+              - generic [ref=e53]: ▸
+              - generic [ref=e54]: Eliminated legacy React Native dependencies from a web-only codebase with web-native replacements and Webpack module aliases.
+            - listitem [ref=e55]:
+              - generic [ref=e56]: ▸
+              - generic [ref=e57]: Built a custom NX executor plugin to bypass NX's wrapped Webpack — unlocking full control over HMR, chunk splitting, and loaders.
+            - listitem [ref=e58]:
+              - generic [ref=e59]: ▸
+              - generic [ref=e60]: Fixed build mode from development to production across all deploy environments, enabling minification and dead-code removal.
+            - listitem [ref=e61]:
+              - generic [ref=e62]: ▸
+              - generic [ref=e63]: Rolled out route- and component-level lazy loading across all remote apps, cutting the initial JS payload by over 50%.
+            - listitem [ref=e64]:
+              - generic [ref=e65]: ▸
+              - generic [ref=e66]: Revamped the Analytics Dashboard, Threads, and internal tools UI/UX using Claude Code and Figma MCP.
+          - generic [ref=e67]:
+            - generic [ref=e68]: React
+            - generic [ref=e69]: Webpack
+            - generic [ref=e70]: NX
+            - generic [ref=e71]: Micro-frontends
+            - generic [ref=e72]: TypeScript
+        - article [ref=e74]:
+          - generic [ref=e75]:
+            - generic [ref=e76]:
+              - heading "Software Engineer" [level=3] [ref=e77]
+              - paragraph [ref=e78]: Saval AI (by Xansr Technologies)
+            - paragraph [ref=e79]: Jan 2024 — Oct 2025 · Hybrid
+          - list [ref=e80]:
+            - listitem [ref=e81]:
+              - generic [ref=e82]: ▸
+              - generic [ref=e83]: Migrated the React Native Android app to iOS and shipped App Store in-app purchases with webhook-based validation on both platforms.
+            - listitem [ref=e84]:
+              - generic [ref=e85]: ▸
+              - generic [ref=e86]: Built 70–75% of the mobile app screens with React Native, Context API, RN Skia, and TanStack Query.
+            - listitem [ref=e87]:
+              - generic [ref=e88]: ▸
+              - generic [ref=e89]: Built internal tools (News Editor, Flashcards, Question Management, analytics, remote config) with Next.js and FastAPI.
+            - listitem [ref=e90]:
+              - generic [ref=e91]: ▸
+              - generic [ref=e92]: Processed ML datasets to improve AI model accuracy.
+            - listitem [ref=e93]:
+              - generic [ref=e94]: ▸
+              - generic [ref=e95]: Built interactive 3D websites and game prototypes with Three.js, GSAP, and TypeScript.
+          - generic [ref=e96]:
+            - generic [ref=e97]: React Native
+            - generic [ref=e98]: Next.js
+            - generic [ref=e99]: FastAPI
+            - generic [ref=e100]: Three.js
+            - generic [ref=e101]: GSAP
+    - generic [ref=e102]:
+      - generic [ref=e103]:
+        - paragraph [ref=e104]: 02 · projects
+        - heading "What I've built" [level=2] [ref=e105]
+      - article [ref=e109]:
+        - generic [ref=e110]:
+          - heading "Lovable Clone" [level=3] [ref=e111]
+          - paragraph [ref=e112]: AI-Powered App Builder
+        - paragraph [ref=e113]: "A distributed, AI-native app builder: describe what you want, and an LLM coding assistant writes the code — streamed live."
+        - list [ref=e114]:
+          - listitem [ref=e115]:
+            - generic [ref=e116]: ▸
+            - generic [ref=e117]: Distributed backend of Spring Boot microservices — API Gateway, Auth/Billing, Workspace, AI, Discovery, Config — with Spring Cloud Gateway and Eureka.
+          - listitem [ref=e118]:
+            - generic [ref=e119]: ▸
+            - generic [ref=e120]: Spring AI LLM coding assistant with a custom RAG advisor for project-context injection and tool calling, streamed over SSE.
+          - listitem [ref=e121]:
+            - generic [ref=e122]: ▸
+            - generic [ref=e123]: Kafka + Saga pattern keeps file storage consistent across services — no distributed transactions.
+          - listitem [ref=e124]:
+            - generic [ref=e125]: ▸
+            - generic [ref=e126]: Nx monorepo frontend with domain-driven modules and a custom Radix UI + Tailwind component library.
+          - listitem [ref=e127]:
+            - generic [ref=e128]: ▸
+            - generic [ref=e129]: JWT auth with refresh-token rotation, Stripe billing, Dockerized and deployed to GKE via GitHub Actions.
+        - generic [ref=e130]:
+          - generic [ref=e131]: Java
+          - generic [ref=e132]: Spring Boot
+          - generic [ref=e133]: Spring AI
+          - generic [ref=e134]: Kafka
+          - generic [ref=e135]: PostgreSQL
+          - generic [ref=e136]: React
+          - generic [ref=e137]: TypeScript
+          - generic [ref=e138]: Nx
+          - generic [ref=e139]: Docker
+          - generic [ref=e140]: GKE
+    - generic [ref=e141]:
+      - generic [ref=e142]:
+        - paragraph [ref=e143]: 03 · skills
+        - heading "What I work with" [level=2] [ref=e144]
+      - generic [ref=e145]:
+        - generic [ref=e146]:
+          - generic [ref=e148]:
+            - heading "Frameworks" [level=3] [ref=e149]
+            - generic [ref=e150]:
+              - generic [ref=e151]: React
+              - generic [ref=e152]: Next.js
+              - generic [ref=e153]: React Native
+              - generic [ref=e154]: Expo
+              - generic [ref=e155]: Node.js
+              - generic [ref=e156]: Spring Boot
+              - generic [ref=e157]: FastAPI
+              - generic [ref=e158]: Vite
+              - generic [ref=e159]: Tailwind CSS
+              - generic [ref=e160]: Three.js
+              - generic [ref=e161]: GSAP
+              - generic [ref=e162]: Zustand
+              - generic [ref=e163]: Redux
+          - generic [ref=e165]:
+            - heading "Databases" [level=3] [ref=e166]
+            - generic [ref=e167]:
+              - generic [ref=e168]: PostgreSQL
+              - generic [ref=e169]: pgvector
+              - generic [ref=e170]: MongoDB
+              - generic [ref=e171]: MySQL
+              - generic [ref=e172]: Redis
+              - generic [ref=e173]: Firebase
+          - generic [ref=e175]:
+            - heading "Cloud & DevOps" [level=3] [ref=e176]
+            - generic [ref=e177]:
+              - generic [ref=e178]: AWS
+              - generic [ref=e179]: Google Cloud
+              - generic [ref=e180]: Docker
+              - generic [ref=e181]: Kubernetes
+              - generic [ref=e182]: GKE
+              - generic [ref=e183]: Kafka
+              - generic [ref=e184]: GitHub Actions
+              - generic [ref=e185]: Vercel
+              - generic [ref=e186]: Netlify
+              - generic [ref=e187]: DigitalOcean
+              - generic [ref=e188]: MinIO
+          - generic [ref=e190]:
+            - heading "Tools" [level=3] [ref=e191]
+            - generic [ref=e192]:
+              - generic [ref=e193]: Git
+              - generic [ref=e194]: Claude Code
+              - generic [ref=e195]: Cursor
+              - generic [ref=e196]: Codex
+              - generic [ref=e197]: Xcode
+              - generic [ref=e198]: Android Studio
+              - generic [ref=e199]: Figma MCP
+        - generic [ref=e201]:
+          - heading "Beyond the job" [level=3] [ref=e202]
+          - list [ref=e203]:
+            - listitem [ref=e204]:
+              - generic [ref=e205]: ▸
+              - generic [ref=e206]: Mentored students on Coding Ninjas — DSA in Java and MERN-stack web development.
+            - listitem [ref=e207]:
+              - generic [ref=e208]: ▸
+              - generic [ref=e209]: Solved 500+ DSA problems across LeetCode, GeeksforGeeks, and Coding Ninjas.
+    - generic [ref=e210]:
+      - generic [ref=e212]:
+        - paragraph [ref=e213]: 04 · contact
+        - heading "Let's build something fast." [level=2] [ref=e214]
+        - paragraph [ref=e215]: Open to frontend and full-stack roles. The quickest way to reach me is email — I usually reply within a day.
+        - generic [ref=e216]:
+          - link "akshit07032001@gmail.com" [ref=e217] [cursor=pointer]:
+            - /url: mailto:akshit07032001@gmail.com
+          - link "GitHub" [ref=e218] [cursor=pointer]:
+            - /url: https://github.com/akshityadav
+          - link "LinkedIn" [ref=e219] [cursor=pointer]:
+            - /url: https://www.linkedin.com/in/akshityadav
+      - generic [ref=e220]:
+        - paragraph [ref=e221]: © 2026 Akshit Yadav Aesham
+        - paragraph [ref=e222]: Built with Next.js · zero animation libraries · statically exported
+  - button "Open Next.js Dev Tools" [ref=e228] [cursor=pointer]:
+    - img [ref=e229]
