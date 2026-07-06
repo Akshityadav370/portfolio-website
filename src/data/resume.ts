@@ -6,9 +6,10 @@ export const profile = {
   email: "akshit07032001@gmail.com",
   site: "https://iakshit.space",
   // TODO: replace with your actual profile URLs
-  github: "https://github.com/akshityadav",
+  github: "https://github.com/Akshityadav370",
   linkedin: "https://www.linkedin.com/in/akshityadav",
-  resumeUrl: "/resume.pdf",
+  resumeUrl:
+    "https://drive.google.com/file/d/1IBRhWwx4GGoY4dewu2UbNS52AmsdZoeM/view?usp=sharing",
   tagline: "I build fast web, mobile & AI-powered products.",
   intro:
     "Frontend engineer working across web, mobile, and AI — micro-frontends and React performance at work, real-time apps, 3D experiences, and LLM-powered tools on the side.",
@@ -96,12 +97,16 @@ export type Project = {
   description: string;
   highlights: string[];
   stack: string[];
+  github?: string;
+  live?: string;
 };
 
 export const projects: Project[] = [
   {
     name: "Lovable Clone",
     tag: "AI-Powered App Builder",
+    github: "https://github.com/Akshityadav370/distributed-lovable-clone",
+    live: "http://lovable.iakshit.space/",
     description:
       "A distributed, AI-native app builder: describe what you want, and an LLM coding assistant writes the code — streamed live.",
     highlights: [
@@ -127,6 +132,7 @@ export const projects: Project[] = [
   {
     name: "DineDash",
     tag: "Food Delivery Platform",
+    github: "https://github.com/Akshityadav370/DineDash",
     description:
       "Full-stack food delivery platform with multi-role authentication for customers, restaurants, and delivery partners.",
     highlights: [
@@ -148,6 +154,8 @@ export const projects: Project[] = [
   {
     name: "MyMiro",
     tag: "Collaborative Whiteboard",
+    github: "https://github.com/Akshityadav370/mymiro",
+    live: "https://mymiro.vercel.app",
     description:
       "Real-time collaborative whiteboard with live cursor tracking and canvas drawing tools — Miro, rebuilt.",
     highlights: [
@@ -168,6 +176,7 @@ export const projects: Project[] = [
   {
     name: "LifeNode",
     tag: "AI Chrome Extension",
+    github: "https://github.com/Akshityadav370/lifenode",
     description:
       "A Chrome extension that packs AI coding assistance, task management, and habit tracking into the browser.",
     highlights: [
@@ -187,6 +196,7 @@ export const projects: Project[] = [
   {
     name: "Choose Your Own Adventure",
     tag: "AI Storytelling Platform",
+    github: "https://github.com/Akshityadav370/Choose-Your-Own-Adventure",
     description:
       "Interactive storytelling platform where LangChain and GPT-4 generate branching stories on the fly.",
     highlights: [

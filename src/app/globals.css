@@ -344,6 +344,56 @@ html.js .reveal.is-visible {
   }
 }
 
+/* Tilt card: leans toward the cursor with a moving glare highlight.
+   --rx/--ry/--mx/--my are set per-card by TiltCard.tsx. */
+.tilt-card {
+  position: relative;
+  border-radius: 1rem;
+  border: 1px solid var(--edge);
+  background: var(--surface);
+  overflow: hidden;
+  transform: perspective(900px) rotateX(var(--rx, 0deg))
+    rotateY(var(--ry, 0deg));
+  transition:
+    transform 0.15s ease-out,
+    border-color 0.3s ease;
+  will-change: transform;
+}
+
+.tilt-card:hover {
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--edge));
+  transform: perspective(900px) rotateX(var(--rx, 0deg))
+    rotateY(var(--ry, 0deg)) scale(1.015);
+}
+
+/* glare that follows the cursor, like light catching the surface */
+.tilt-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    380px circle at var(--mx, 50%) var(--my, 50%),
+    rgba(255, 255, 255, 0.08),
+    transparent 65%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.tilt-card:hover::after {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tilt-card,
+  .tilt-card:hover {
+    transform: none;
+    transition: none;
+  }
+}
+
 /* Blinking caret for the hero typewriter greeting */
 .tw-caret {
   display: inline-block;
