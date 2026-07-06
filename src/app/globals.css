@@ -500,6 +500,31 @@ html.js .reveal.is-visible {
   }
 }
 
+/* GitLens-style ghost comment: evidence fades in at the end of a hovered
+   skills.json line */
+.ghost-comment {
+  font-style: italic;
+  opacity: 0.85;
+  animation: ghost-in 0.22s ease;
+}
+
+@keyframes ghost-in {
+  from {
+    opacity: 0;
+    transform: translateX(-4px);
+  }
+  to {
+    opacity: 0.85;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ghost-comment {
+    animation: none;
+  }
+}
+
 /* Vibrancy: gradient text + gradient primary buttons in the theme's accents */
 .text-gradient {
   background-image: linear-gradient(
