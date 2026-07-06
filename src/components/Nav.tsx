@@ -126,7 +126,7 @@ function ThemeDropdown() {
       {open && (
         <div
           role="menu"
-          className="glass absolute right-0 top-11 z-50 max-h-[70vh] w-56 overflow-y-auto rounded-xl p-1.5"
+          className="glass absolute right-0 top-11 z-50 max-h-[70vh] w-56 overflow-y-auto rounded-xl p-1.5 !bg-surface"
         >
           {group("dark", DARK_THEMES)}
           {group("light", LIGHT_THEMES)}
