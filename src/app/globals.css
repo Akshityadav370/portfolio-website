@@ -463,8 +463,10 @@ html.js .reveal.is-visible {
   box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 70%, transparent);
 }
 
-/* light sweep across the active commit's title, like a reflection */
-.commit-entry.is-active .commit-title {
+/* light sweep across the active commit's title/description, like a reflection */
+.commit-entry.is-active .commit-title,
+.commit-entry.is-active .commit-summary,
+.commit-entry.is-active .commit-highlight {
   background-image: linear-gradient(
     110deg,
     var(--foreground) 42%,
@@ -477,6 +479,14 @@ html.js .reveal.is-visible {
   background-clip: text;
   color: transparent;
   animation: text-shine 2.8s ease-in-out infinite;
+}
+
+.commit-entry.is-active .commit-summary {
+  animation-delay: 0.15s;
+}
+
+.commit-entry.is-active .commit-highlight {
+  animation-delay: 0.3s;
 }
 
 @keyframes text-shine {
@@ -493,7 +503,9 @@ html.js .reveal.is-visible {
   .commit-entry {
     opacity: 1;
   }
-  .commit-entry.is-active .commit-title {
+  .commit-entry.is-active .commit-title,
+  .commit-entry.is-active .commit-summary,
+  .commit-entry.is-active .commit-highlight {
     animation: none;
     background-image: none;
     color: var(--accent);

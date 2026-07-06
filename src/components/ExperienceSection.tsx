@@ -104,7 +104,7 @@ export default function ExperienceSection() {
                   {commitHash(job.company + job.period)} · {job.period} ·{" "}
                   {job.mode} · {job.company}
                 </p>
-                <p className="mt-3 max-w-2xl leading-relaxed text-muted">
+                <p className="commit-summary mt-3 max-w-2xl leading-relaxed text-muted">
                   {job.summary}
                 </p>
 
@@ -127,7 +127,9 @@ export default function ExperienceSection() {
                         <span aria-hidden className="mt-0.5 text-accent">
                           +
                         </span>
-                        <span className="leading-relaxed">{highlight}</span>
+                        <span className="commit-highlight leading-relaxed">
+                          {highlight}
+                        </span>
                       </li>
                     ))}
                   </ul>
