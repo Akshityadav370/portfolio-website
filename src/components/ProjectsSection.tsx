@@ -11,13 +11,13 @@ function Chips({ stack, limit }: { stack: string[]; limit?: number }) {
       {shown.map((tech) => (
         <span
           key={tech}
-          className="rounded-full border border-edge px-3 py-1 font-mono text-xs text-muted"
+          className="glass-chip rounded-full border border-edge px-3 py-1 font-mono text-xs text-muted"
         >
           {tech}
         </span>
       ))}
       {rest > 0 && (
-        <span className="rounded-full border border-edge px-3 py-1 font-mono text-xs text-muted">
+        <span className="glass-chip rounded-full border border-edge px-3 py-1 font-mono text-xs text-muted">
           +{rest}
         </span>
       )}

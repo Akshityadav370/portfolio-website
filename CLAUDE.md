@@ -10,7 +10,8 @@ Akshit's portfolio at **https://iakshit.space** — Next.js static export (`outp
 - **14 rotating themes** in `src/data/themes.ts` + `[data-theme]`/`[data-mode]` CSS vars in `globals.css` (9 dark editor/mood themes, 5 light). A pre-paint inline script in `layout.tsx` picks mode by local hour (7–19 = light) unless the Nav sun/moon toggle persisted an override, then rotates within the pool per visit (`theme-i-dark`/`theme-i-light` in localStorage). Client helpers: `src/lib/theme.ts`. ThemeBadge pill (bottom-left) shuffles.
 - **BackgroundFX**: 3 drifting aurora blobs (wrapped in `.fx-aurora-mask` — full color at screen edges, ~28% under the reading column for readability; don't undo this), dot grid, cursor spotlight grid, film grain.
 - **Identity motif is "engineer's desktop"**: hero = Apple-style multilingual typewriter greeting; experience = `git log --career` timeline (scroll-progress line, active commit gets dot glow + text-shine, details expanded by default — he wants work descriptions visible); skills = `skills.json` editor window (values ^prod/^shipped/^familiar auto-derived from stacks + ALIASES map; hover = GitLens-style ghost comment showing where a skill was used); projects = bento grid with TiltCard 3D hover; terminal easter egg (click `~/akshit` logo or press backtick).
-- Utilities: `.text-gradient`, `.btn-gradient`, `.tw-caret`, light-mode card shadows via `[data-mode="light"] .tilt-card / .lift`.
+- Utilities: `.text-gradient`, `.btn-gradient`, `.tw-caret`, and a glass family: `.glass` (nav pill + dropdown, most transparent), `.glass-card` (content cards, more opaque + backdrop blur; `.tilt-card` has the same treatment baked in), `.glass-chip` (small chips/buttons — translucent tint + inner highlight but deliberately NO backdrop-filter, since ~60 live blur layers would tank scroll perf). Light-mode card shadows via `[data-mode="light"] .tilt-card / .lift`.
+- **Nav is a floating glass pill** with a theme dropdown (grouped dark/light, per-theme gradient swatches via `data-theme` stamped on the swatch span so CSS vars re-resolve) + sun/moon mode toggle. The old bottom-left ThemeBadge chip was removed at his request.
 
 ## Owner preferences (learned, respect these)
 - **Discuss options before implementing** UI/design changes — present 3-4 ideas with trade-offs, let him pick.
@@ -24,6 +25,7 @@ Akshit's portfolio at **https://iakshit.space** — Next.js static export (`outp
 
 ## Dev gotchas
 - **Turbopack stale-CSS wedge**: after rapid `globals.css` edits, new rules may never reach the browser (even after reload). Verify with `npx @tailwindcss/cli -i src/app/globals.css -o /tmp/out.css`; if the CLI output is fine, `rm -rf .next/dev` and restart `npm run dev`.
+- **Don't hand-write `-webkit-` prefixed duplicates** (e.g. `-webkit-backdrop-filter` next to `backdrop-filter`) — the dev pipeline merges duplicate properties keeping only the last, which silently drops the standard one. Write the standard property once; the compiler prefixes for target browsers.
 - Page uses `scroll-behavior: smooth` — set it to `auto` before programmatic scrolling in browser tests, or reveals won't trigger.
 - Playwright MCP is the preferred way to visually verify changes (screenshots + evaluate).
 

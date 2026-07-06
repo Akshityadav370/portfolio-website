@@ -70,7 +70,7 @@ export default function SkillsSection() {
   return (
     <Section id="skills" eyebrow="03 · skills" title="skills.json">
       <Reveal>
-        <div className="overflow-hidden rounded-2xl border border-edge bg-surface">
+        <div className="glass-card overflow-hidden rounded-2xl border border-edge">
           {/* editor title bar */}
           <div className="flex items-center gap-2 border-b border-edge px-4 py-2.5">
             <span aria-hidden className="h-3 w-3 rounded-full bg-[#ff5f57]" />
@@ -138,7 +138,7 @@ export default function SkillsSection() {
       </Reveal>
 
       <Reveal className="mt-6">
-        <div className="rounded-2xl border border-edge bg-surface p-6">
+        <div className="glass-card rounded-2xl border border-edge p-6">
           <h3 className="font-mono text-sm text-accent">Beyond the job</h3>
           <ul className="mt-4 space-y-2">
             {achievements.map((achievement) => (
@@ -154,7 +154,7 @@ export default function SkillsSection() {
                       href={link.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="ml-2 inline-block rounded-full border border-edge px-2.5 py-0.5 font-mono text-xs text-accent transition-colors hover:border-accent/50"
+                      className="glass-chip ml-2 inline-block rounded-full border border-edge px-2.5 py-0.5 font-mono text-xs text-accent transition-colors hover:border-accent/50"
                     >
                       {link.label} ↗
                     </a>

@@ -29,7 +29,7 @@ export default function Hero() {
             {heroFacts.map((fact) => (
               <div
                 key={fact.label}
-                className="rounded-xl border border-edge bg-surface px-4 py-3"
+                className="glass-card rounded-xl border border-edge px-4 py-3"
               >
                 <p className="font-mono text-lg font-semibold text-accent">
                   {fact.value}
@@ -49,7 +49,7 @@ export default function Hero() {
             </a>
             <a
               href="#contact"
-              className="rounded-full border border-edge px-6 py-3 text-sm text-foreground transition-colors hover:border-accent/40 hover:text-accent"
+              className="glass-chip rounded-full border border-edge px-6 py-3 text-sm text-foreground transition-colors hover:border-accent/40 hover:text-accent"
             >
               Get in touch
             </a>

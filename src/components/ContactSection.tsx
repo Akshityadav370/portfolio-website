@@ -32,13 +32,13 @@ function LinkedInIcon() {
 }
 
 const iconLink =
-  "flex h-12 w-12 items-center justify-center rounded-full border border-edge text-muted transition-all hover:-translate-y-0.5 hover:border-accent/50 hover:text-accent";
+  "glass-chip flex h-12 w-12 items-center justify-center rounded-full border border-edge text-muted transition-all hover:-translate-y-0.5 hover:border-accent/50 hover:text-accent";
 
 export default function ContactSection() {
   return (
     <section id="contact" className="mx-auto max-w-5xl px-6 py-20 sm:py-28">
       <Reveal>
-        <div className="lift rounded-3xl border border-edge bg-surface p-10 text-center sm:p-16">
+        <div className="glass-card lift rounded-3xl border border-edge p-10 text-center sm:p-16">
           <p className="font-mono text-sm text-accent">04 · contact</p>
           <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-5xl">
             <span className="text-gradient">

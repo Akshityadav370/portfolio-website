@@ -7,7 +7,6 @@ import PerfHud from "@/components/PerfHud";
 import ProjectsSection from "@/components/ProjectsSection";
 import SkillsSection from "@/components/SkillsSection";
 import Terminal from "@/components/Terminal";
-import ThemeBadge from "@/components/ThemeBadge";
 
 export default function Home() {
   return (
@@ -22,7 +21,6 @@ export default function Home() {
         <ContactSection />
       </main>
       <Terminal />
-      <ThemeBadge />
       <PerfHud />
     </>
   );
