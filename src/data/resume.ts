@@ -5,15 +5,29 @@ export const profile = {
   location: "Hyderabad, India",
   email: "akshit07032001@gmail.com",
   site: "https://iakshit.space",
-  // TODO: replace with your actual profile URLs
   github: "https://github.com/Akshityadav370",
-  linkedin: "https://www.linkedin.com/in/akshityadav",
+  linkedin: "https://www.linkedin.com/in/akshit-yadav/",
   resumeUrl:
     "https://drive.google.com/file/d/1IBRhWwx4GGoY4dewu2UbNS52AmsdZoeM/view?usp=sharing",
   tagline: "I build fast web, mobile & AI-powered products.",
   intro:
     "Full-stack engineer building across web, mobile, and AI — React micro-frontends and Spring Boot microservices, real-time apps, and LLM-powered products end to end.",
 };
+
+// Coding profiles — entries with an empty url are hidden until filled in.
+export const codingProfiles = [
+  { name: "LeetCode", short: "LC", url: "https://leetcode.com/u/bucephalus370/" },
+  {
+    name: "GeeksforGeeks",
+    short: "GfG",
+    url: "https://www.geeksforgeeks.org/user/bucephalus370/",
+  },
+  {
+    name: "Coding Ninjas",
+    short: "CN",
+    url: "https://www.naukri.com/code360/profile/0d00d6b3-24d6-4af9-8f99-b4543f67bad1",
+  },
+];
 
 export const heroFacts = [
   { value: "2.5+ yrs", label: "shipping products" },
@@ -291,7 +305,29 @@ export const skillGroups: { title: string; skills: string[] }[] = [
   },
 ];
 
-export const achievements = [
-  "Mentored students on Coding Ninjas — DSA in Java and MERN-stack web development.",
-  "Solved 500+ DSA problems across LeetCode, GeeksforGeeks, and Coding Ninjas.",
+export type Achievement = {
+  text: string;
+  links: { label: string; url: string }[];
+};
+
+export const achievements: Achievement[] = [
+  {
+    text: "Mentored students on Coding Ninjas — DSA in Java and MERN-stack web development.",
+    links: [
+      {
+        label: "DSA",
+        url: "https://drive.google.com/file/d/1FsB_qF1cCqpYgQgfmdHM2KcWtfqtf3AE/view?usp=sharing",
+      },
+      {
+        label: "WebDev",
+        url: "https://drive.google.com/file/d/1z28LudvhXDP4k2FHkLePuHRQcM6CfYU9/view?usp=sharing",
+      },
+    ],
+  },
+  {
+    text: "Solved 500+ DSA problems across LeetCode, GeeksforGeeks, and Coding Ninjas.",
+    links: codingProfiles
+      .filter((p) => p.url)
+      .map((p) => ({ label: p.short, url: p.url })),
+  },
 ];

@@ -142,11 +142,24 @@ export default function SkillsSection() {
           <h3 className="font-mono text-sm text-accent">Beyond the job</h3>
           <ul className="mt-4 space-y-2">
             {achievements.map((achievement) => (
-              <li key={achievement} className="flex gap-3 text-muted">
+              <li key={achievement.text} className="flex gap-3 text-muted">
                 <span aria-hidden className="mt-1 text-accent">
                   ▸
                 </span>
-                <span className="leading-relaxed">{achievement}</span>
+                <span className="leading-relaxed">
+                  {achievement.text}
+                  {achievement.links.map((link) => (
+                    <a
+                      key={link.url}
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ml-2 inline-block rounded-full border border-edge px-2.5 py-0.5 font-mono text-xs text-accent transition-colors hover:border-accent/50"
+                    >
+                      {link.label} ↗
+                    </a>
+                  ))}
+                </span>
               </li>
             ))}
           </ul>
