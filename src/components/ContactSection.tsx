@@ -112,7 +112,24 @@ export default function ContactSection() {
         <p>
           © {new Date().getFullYear()} {profile.name}
         </p>
-        <p>Built with Next.js · zero animation libraries · statically exported</p>
+        <p className="flex items-center gap-1.5">
+          built with{" "}
+          <span
+            aria-label="love"
+            className="animate-pulse text-accent motion-reduce:animate-none"
+          >
+            ♥
+          </span>{" "}
+          using{" "}
+          <a
+            href="https://claude.com/claude-code"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-gradient font-semibold transition-opacity hover:opacity-80"
+          >
+            Claude Code
+          </a>
+        </p>
       </footer>
     </section>
   );
