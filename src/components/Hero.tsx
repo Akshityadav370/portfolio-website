@@ -48,7 +48,7 @@ export default function Hero() {
               See the work
             </a>
             <a
-              href={`mailto:${profile.email}`}
+              href="#contact"
               className="rounded-full border border-edge px-6 py-3 text-sm text-foreground transition-colors hover:border-accent/40 hover:text-accent"
             >
               Get in touch
