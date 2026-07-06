@@ -153,8 +153,48 @@ function ModeToggle() {
   );
 }
 
+/* The logo periodically retypes itself as "~/terminal" so visitors discover
+   that clicking it opens the terminal easter egg. */
+function useLogoCycle() {
+  const [text, setText] = useState("akshit");
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let cancelled = false;
+    const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+    const erase = async (word: string) => {
+      for (let i = word.length; i >= 0 && !cancelled; i--) {
+        setText(word.slice(0, i));
+        await sleep(45);
+      }
+    };
+    const type = async (word: string) => {
+      for (let i = 1; i <= word.length && !cancelled; i++) {
+        setText(word.slice(0, i));
+        await sleep(75);
+      }
+    };
+    (async () => {
+      while (!cancelled) {
+        await sleep(6500);
+        await erase("akshit");
+        await type("terminal");
+        await sleep(1800);
+        await erase("terminal");
+        await type("akshit");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return text;
+}
+
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
+  const logoText = useLogoCycle();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -174,9 +214,10 @@ export default function Nav() {
           type="button"
           onClick={() => window.dispatchEvent(new Event("terminal:open"))}
           title="Open the terminal"
-          className="cursor-pointer font-mono text-sm font-semibold text-foreground"
+          className="min-w-[11ch] cursor-pointer text-left font-mono text-sm font-semibold text-foreground transition-colors hover:text-accent"
         >
-          <span className="text-accent">~/</span>akshit
+          <span className="text-accent">~/</span>
+          {logoText}
           <span aria-hidden className="tw-caret ml-1 align-middle" />
         </button>
         <div className="hidden items-center gap-6 md:flex">

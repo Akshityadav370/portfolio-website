@@ -1,6 +1,7 @@
 import TiltCard from "@/components/TiltCard";
 import Reveal from "@/components/Reveal";
 import Section from "@/components/Section";
+import SkillIcon from "@/components/SkillIcon";
 import { projects, type Project } from "@/data/resume";
 
 function Chips({ stack, limit }: { stack: string[]; limit?: number }) {
@@ -11,8 +12,9 @@ function Chips({ stack, limit }: { stack: string[]; limit?: number }) {
       {shown.map((tech) => (
         <span
           key={tech}
-          className="glass-chip rounded-full border border-edge px-3 py-1 font-mono text-xs text-muted"
+          className="glass-chip inline-flex items-center gap-1.5 rounded-full border border-edge px-3 py-1 font-mono text-xs text-muted"
         >
+          <SkillIcon name={tech} size={12} />
           {tech}
         </span>
       ))}

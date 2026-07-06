@@ -4,6 +4,7 @@ import {
   siGithub,
   siLeetcode,
 } from "simple-icons";
+import MiniTerminal from "@/components/MiniTerminal";
 import Reveal from "@/components/Reveal";
 import { codingProfiles, profile } from "@/data/resume";
 
@@ -38,74 +39,80 @@ export default function ContactSection() {
   return (
     <section id="contact" className="mx-auto max-w-5xl px-6 py-20 sm:py-28">
       <Reveal>
-        <div className="glass-card lift rounded-3xl border border-edge p-10 text-center sm:p-16">
-          <p className="font-mono text-sm text-accent">04 · contact</p>
-          <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-5xl">
-            <span className="text-gradient">
-              Let&apos;s build something fast.
-            </span>
-          </h2>
-          <p className="mx-auto mt-4 max-w-md leading-relaxed text-muted">
-            Open to full-stack and frontend roles. The quickest way to reach me
-            is email — I usually reply within a day.
-          </p>
+        <div className="glass-card lift rounded-3xl border border-edge p-8 sm:p-12">
+          <div className="grid items-center gap-10 lg:grid-cols-2">
+            <div>
+              <p className="font-mono text-sm text-accent">04 · contact</p>
+              <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-5xl">
+                <span className="text-gradient">
+                  Let&apos;s build something fast.
+                </span>
+              </h2>
+              <p className="mt-4 max-w-md leading-relaxed text-muted">
+                Open to full-stack and frontend roles. The quickest way to
+                reach me is email — I usually reply within a day.
+              </p>
 
-          <div className="mt-8 flex justify-center">
-            <a
-              href={`mailto:${profile.email}`}
-              className="btn-gradient rounded-full px-6 py-3 text-sm font-medium text-background"
-            >
-              {profile.email}
-            </a>
-          </div>
-
-          {/* socials + coding profiles */}
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <a
-              href={profile.github}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="GitHub profile"
-              title="GitHub"
-              className={iconLink}
-            >
-              <BrandIcon path={siGithub.path} />
-            </a>
-            <a
-              href={profile.linkedin}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="LinkedIn profile"
-              title="LinkedIn"
-              className={iconLink}
-            >
-              <LinkedInIcon />
-            </a>
-            {codingProfiles
-              .filter((p) => p.url)
-              .map((p) => (
+              <div className="mt-8">
                 <a
-                  key={p.name}
-                  href={p.url}
+                  href={`mailto:${profile.email}`}
+                  className="btn-gradient inline-block rounded-full px-6 py-3 text-sm font-medium text-background"
+                >
+                  {profile.email}
+                </a>
+              </div>
+
+              {/* socials + coding profiles */}
+              <div className="mt-8 flex flex-wrap items-center gap-3">
+                <a
+                  href={profile.github}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label={`${p.name} profile`}
-                  title={p.name}
+                  aria-label="GitHub profile"
+                  title="GitHub"
                   className={iconLink}
                 >
-                  {profileIcons[p.name] ? (
-                    <BrandIcon path={profileIcons[p.name]} />
-                  ) : (
-                    <span className="font-mono text-xs font-semibold">
-                      {p.short}
-                    </span>
-                  )}
+                  <BrandIcon path={siGithub.path} />
                 </a>
-              ))}
+                <a
+                  href={profile.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="LinkedIn profile"
+                  title="LinkedIn"
+                  className={iconLink}
+                >
+                  <LinkedInIcon />
+                </a>
+                {codingProfiles
+                  .filter((p) => p.url)
+                  .map((p) => (
+                    <a
+                      key={p.name}
+                      href={p.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`${p.name} profile`}
+                      title={p.name}
+                      className={iconLink}
+                    >
+                      {profileIcons[p.name] ? (
+                        <BrandIcon path={profileIcons[p.name]} />
+                      ) : (
+                        <span className="font-mono text-xs font-semibold">
+                          {p.short}
+                        </span>
+                      )}
+                    </a>
+                  ))}
+              </div>
+              <p className="mt-4 font-mono text-xs text-muted">
+                {profile.location}
+              </p>
+            </div>
+
+            <MiniTerminal />
           </div>
-          <p className="mt-4 font-mono text-xs text-muted">
-            {profile.location}
-          </p>
         </div>
       </Reveal>
       <footer className="mt-12 flex flex-wrap items-center justify-between gap-2 font-mono text-xs text-muted">

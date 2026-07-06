@@ -579,6 +579,19 @@ html.js .reveal.is-visible {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
+/* Brand-colored skill icons (SkillIcon.tsx). Near-black brand marks switch
+   to the theme foreground in dark mode so they stay visible. */
+.skill-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  color: var(--brand);
+}
+
+[data-mode="dark"] .skill-icon.si-invert,
+:root:not([data-mode="light"]) .skill-icon.si-invert {
+  color: var(--foreground);
+}
+
 /* Vibrancy: gradient text + gradient primary buttons in the theme's accents */
 .text-gradient {
   background-image: linear-gradient(

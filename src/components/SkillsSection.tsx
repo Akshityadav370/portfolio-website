@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Reveal from "@/components/Reveal";
 import Section from "@/components/Section";
+import SkillIcon from "@/components/SkillIcon";
 import { achievements, experience, projects, skillGroups } from "@/data/resume";
 
 // "Next.js 15" -> "next.js", "React 19" -> "react"
@@ -105,6 +106,11 @@ export default function SkillsSection() {
                           : "hover:bg-accent/5"
                       }`}
                     >
+                      <SkillIcon
+                        name={skill}
+                        size={13}
+                        className="mr-1.5 align-[-0.125em]"
+                      />
                       <span className="text-foreground">
                         &quot;{normalize(skill)}&quot;
                       </span>
