@@ -74,7 +74,9 @@ export default function Typewriter() {
 
   return (
     <span aria-label="Hello">
-      <span aria-hidden>{reduced ? GREETINGS[0] : text}</span>
+      <span aria-hidden className="text-gradient">
+        {reduced ? GREETINGS[0] : text}
+      </span>
       <span aria-hidden className="tw-caret" />
     </span>
   );

@@ -8,16 +8,16 @@ export default function ContactSection() {
         <div className="rounded-3xl border border-edge bg-surface p-10 text-center sm:p-16">
           <p className="font-mono text-sm text-accent">04 · contact</p>
           <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-5xl">
-            Let&apos;s build something fast.
+            <span className="text-gradient">Let&apos;s build something fast.</span>
           </h2>
           <p className="mx-auto mt-4 max-w-md leading-relaxed text-muted">
-            Open to frontend and full-stack roles. The quickest way to reach me
+            Open to full-stack and frontend roles. The quickest way to reach me
             is email — I usually reply within a day.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
             <a
               href={`mailto:${profile.email}`}
-              className="rounded-full bg-accent px-6 py-3 text-sm font-medium text-background transition-opacity hover:opacity-90"
+              className="btn-gradient rounded-full px-6 py-3 text-sm font-medium text-background"
             >
               {profile.email}
             </a>

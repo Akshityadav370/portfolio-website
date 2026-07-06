@@ -28,13 +28,13 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://iakshit.space"),
-  title: "Akshit Yadav — Frontend Engineer",
+  title: "Akshit Yadav — Software Engineer",
   description:
-    "Frontend engineer building fast web, mobile, and AI-powered products — React, Next.js, React Native, micro-frontends, and Three.js.",
+    "Full-stack engineer building fast web, mobile, and AI-powered products — React, Next.js, React Native, Spring Boot, Kafka, and Kubernetes.",
   openGraph: {
-    title: "Akshit Yadav — Frontend Engineer",
+    title: "Akshit Yadav — Software Engineer",
     description:
-      "Frontend engineer building fast web, mobile, and AI-powered products.",
+      "Full-stack engineer building fast web, mobile, and AI-powered products.",
     url: "https://iakshit.space",
     siteName: "Akshit Yadav",
     type: "website",

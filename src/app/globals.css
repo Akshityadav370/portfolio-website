@@ -93,55 +93,55 @@
   --edge: rgba(243, 233, 220, 0.08);
 }
 
-/* --- Light pool --- */
+/* --- Light pool: tinted backgrounds, white-ish cards that pop, vivid accents --- */
 [data-theme="github-light"] {
-  --background: #ffffff;
-  --surface: #f6f8fa;
+  --background: #f2f6fa;
+  --surface: #ffffff;
   --foreground: #1f2328;
-  --muted: #59636e;
+  --muted: #57606a;
   --accent: #0969da;
   --accent-2: #8250df;
-  --edge: rgba(31, 35, 40, 0.12);
+  --edge: rgba(31, 35, 40, 0.14);
 }
 
 [data-theme="solarized-light"] {
-  --background: #fdf6e3;
-  --surface: #eee8d5;
+  --background: #f3ecd8;
+  --surface: #fdf6e3;
   --foreground: #073642;
-  --muted: #657b83;
+  --muted: #587680;
   --accent: #268bd2;
   --accent-2: #d33682;
-  --edge: rgba(7, 54, 66, 0.12);
+  --edge: rgba(7, 54, 66, 0.16);
 }
 
 [data-theme="catppuccin-latte"] {
-  --background: #eff1f5;
-  --surface: #e6e9ef;
+  --background: #e8ecf4;
+  --surface: #ffffff;
   --foreground: #4c4f69;
-  --muted: #6c6f85;
+  --muted: #5c5f77;
   --accent: #8839ef;
   --accent-2: #ea76cb;
-  --edge: rgba(76, 79, 105, 0.12);
+  --edge: rgba(76, 79, 105, 0.16);
 }
 
 [data-theme="rose-pine-dawn"] {
-  --background: #faf4ed;
+  --background: #f4ebe1;
   --surface: #fffaf3;
   --foreground: #575279;
-  --muted: #797593;
-  --accent: #b4637a;
+  --muted: #6e6a86;
+  --accent: #d7827e;
   --accent-2: #907aa9;
-  --edge: rgba(87, 82, 121, 0.12);
+  --edge: rgba(87, 82, 121, 0.16);
 }
 
 [data-theme="gruvbox-light"] {
-  --background: #fbf1c7;
-  --surface: #f2e5bc;
+  --background: #f5e8b8;
+  --surface: #fbf1c7;
   --foreground: #3c3836;
-  --muted: #7c6f64;
+  --muted: #665c54;
   --accent: #b57614;
-  --accent-2: #af3a03;
-  --edge: rgba(60, 56, 54, 0.12);
+  --accent-2: #cc241d;
+  --edge: rgba(60, 56, 54, 0.18);
 }
 
 :root {
@@ -211,8 +211,8 @@ html.js .reveal.is-visible {
   min-width: 560px;
   min-height: 560px;
   border-radius: 50%;
-  filter: blur(90px);
-  opacity: 0.3;
+  filter: blur(80px);
+  opacity: 0.38;
   will-change: transform;
 }
 
@@ -247,8 +247,8 @@ html.js .reveal.is-visible {
 }
 
 [data-mode="light"] .fx-aurora {
-  opacity: 0.38;
-  filter: blur(100px) saturate(1.15);
+  opacity: 0.48;
+  filter: blur(90px) saturate(1.25);
 }
 
 [data-mode="light"] .fx-aurora--c {
@@ -392,6 +392,41 @@ html.js .reveal.is-visible {
     transform: none;
     transition: none;
   }
+}
+
+/* Light mode: cards need shadows to lift off the tinted background */
+[data-mode="light"] .tilt-card,
+[data-mode="light"] .lift {
+  box-shadow:
+    0 1px 2px rgba(20, 24, 40, 0.05),
+    0 8px 24px rgba(20, 24, 40, 0.08);
+}
+
+[data-mode="light"] .tilt-card:hover {
+  box-shadow:
+    0 2px 4px rgba(20, 24, 40, 0.06),
+    0 16px 40px rgba(20, 24, 40, 0.12);
+}
+
+/* Vibrancy: gradient text + gradient primary buttons in the theme's accents */
+.text-gradient {
+  background-image: linear-gradient(
+    100deg,
+    var(--accent),
+    var(--accent-2) 85%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.btn-gradient {
+  background-image: linear-gradient(135deg, var(--accent), var(--accent-2));
+  transition: filter 0.2s ease;
+}
+
+.btn-gradient:hover {
+  filter: brightness(1.12);
 }
 
 /* Blinking caret for the hero typewriter greeting */

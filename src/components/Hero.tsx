@@ -43,7 +43,7 @@ export default function Hero() {
           <div className="mt-10 flex flex-wrap items-center gap-4">
             <a
               href="#experience"
-              className="rounded-full bg-accent px-6 py-3 text-sm font-medium text-background transition-opacity hover:opacity-90"
+              className="btn-gradient rounded-full px-6 py-3 text-sm font-medium text-background"
             >
               See the work
             </a>

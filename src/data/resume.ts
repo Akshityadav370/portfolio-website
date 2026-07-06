@@ -1,6 +1,6 @@
 export const profile = {
   name: "Akshit Yadav Aesham",
-  role: "Software Development Engineer 1 · Frontend",
+  role: "Software Engineer",
   company: "Zotok AI",
   location: "Hyderabad, India",
   email: "akshit07032001@gmail.com",
@@ -12,7 +12,7 @@ export const profile = {
     "https://drive.google.com/file/d/1IBRhWwx4GGoY4dewu2UbNS52AmsdZoeM/view?usp=sharing",
   tagline: "I build fast web, mobile & AI-powered products.",
   intro:
-    "Frontend engineer working across web, mobile, and AI — micro-frontends and React performance at work, real-time apps, 3D experiences, and LLM-powered tools on the side.",
+    "Full-stack engineer building across web, mobile, and AI — React micro-frontends and Spring Boot microservices, real-time apps, and LLM-powered products end to end.",
 };
 
 export const heroFacts = [
