@@ -1,6 +1,6 @@
 export const profile = {
   name: "Akshit Yadav Aesham",
-  role: "Software Engineer",
+  role: "Software Development Engineer 1 - Frontend",
   company: "Zotok AI",
   location: "Hyderabad, India",
   email: "akshit07032001@gmail.com",
@@ -20,6 +20,13 @@ export const heroFacts = [
   { value: "web · mobile · AI", label: "across the stack" },
   { value: "500+", label: "DSA problems solved" },
 ];
+
+export const education = {
+  degree: "B.Tech — Computer Science & Engineering",
+  school: "Sreyas Institute of Engineering & Technology",
+  period: "2020 — 2024",
+  score: "8.12 CGPA",
+};
 
 export type Experience = {
   role: string;

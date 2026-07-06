@@ -49,9 +49,11 @@ export default function BackgroundFX() {
 
   return (
     <div aria-hidden className="fx-layer">
-      <div className="fx-aurora fx-aurora--a" />
-      <div className="fx-aurora fx-aurora--b" />
-      <div className="fx-aurora fx-aurora--c" />
+      <div className="fx-aurora-mask">
+        <div className="fx-aurora fx-aurora--a" />
+        <div className="fx-aurora fx-aurora--b" />
+        <div className="fx-aurora fx-aurora--c" />
+      </div>
       <div className="fx-grid" />
       <div ref={spotRef} className="fx-spot" />
       <div className="fx-grain" />

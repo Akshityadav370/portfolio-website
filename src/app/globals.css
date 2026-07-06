@@ -203,6 +203,27 @@ html.js .reveal.is-visible {
   pointer-events: none;
 }
 
+/* Keep the aurora vivid at the screen edges but fade it under the centered
+   reading column so drifting color never fights the text. */
+.fx-aurora-mask {
+  position: absolute;
+  inset: 0;
+  mask-image: linear-gradient(
+    to right,
+    black,
+    rgba(0, 0, 0, 0.28) 30%,
+    rgba(0, 0, 0, 0.28) 70%,
+    black
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    black,
+    rgba(0, 0, 0, 0.28) 30%,
+    rgba(0, 0, 0, 0.28) 70%,
+    black
+  );
+}
+
 /* Drifting aurora blobs in the theme's two accent colors */
 .fx-aurora {
   position: absolute;
@@ -406,6 +427,77 @@ html.js .reveal.is-visible {
   box-shadow:
     0 2px 4px rgba(20, 24, 40, 0.06),
     0 16px 40px rgba(20, 24, 40, 0.12);
+}
+
+/* Career timeline: scroll-progress branch line + active-commit highlight.
+   Driven by the scroll handler in ExperienceSection.tsx. */
+.timeline-progress {
+  position: absolute;
+  top: 0;
+  left: -1.5px;
+  width: 2px;
+  height: 0;
+  background: linear-gradient(to bottom, var(--accent), var(--accent-2));
+  box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 60%, transparent);
+}
+
+.commit-entry {
+  opacity: 0.55;
+  transition: opacity 0.45s ease;
+}
+
+.commit-entry.is-active {
+  opacity: 1;
+}
+
+.commit-entry .commit-dot {
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.commit-entry.is-active .commit-dot {
+  border-color: var(--accent);
+  background: var(--accent);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 70%, transparent);
+}
+
+/* light sweep across the active commit's title, like a reflection */
+.commit-entry.is-active .commit-title {
+  background-image: linear-gradient(
+    110deg,
+    var(--foreground) 42%,
+    var(--accent) 50%,
+    var(--accent-2) 54%,
+    var(--foreground) 62%
+  );
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: text-shine 2.8s ease-in-out infinite;
+}
+
+@keyframes text-shine {
+  0% {
+    background-position: 120% 0;
+  }
+  55%,
+  100% {
+    background-position: -30% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .commit-entry {
+    opacity: 1;
+  }
+  .commit-entry.is-active .commit-title {
+    animation: none;
+    background-image: none;
+    color: var(--accent);
+  }
 }
 
 /* Vibrancy: gradient text + gradient primary buttons in the theme's accents */
