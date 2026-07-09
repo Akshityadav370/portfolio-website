@@ -365,69 +365,13 @@ html.js .reveal.is-visible {
   }
 }
 
-/* Tilt card: leans toward the cursor with a moving glare highlight.
-   --rx/--ry/--mx/--my are set per-card by TiltCard.tsx. */
-.tilt-card {
-  position: relative;
-  border-radius: 1rem;
-  border: 1px solid var(--edge);
-  background: color-mix(in srgb, var(--surface) 72%, transparent);
-  backdrop-filter: blur(14px) saturate(1.5);
-  overflow: hidden;
-  transform: perspective(900px) rotateX(var(--rx, 0deg))
-    rotateY(var(--ry, 0deg));
-  transition:
-    transform 0.15s ease-out,
-    border-color 0.3s ease;
-  will-change: transform;
-}
-
-.tilt-card:hover {
-  border-color: color-mix(in srgb, var(--accent) 35%, var(--edge));
-  transform: perspective(900px) rotateX(var(--rx, 0deg))
-    rotateY(var(--ry, 0deg)) scale(1.015);
-}
-
-/* glare that follows the cursor, like light catching the surface */
-.tilt-card::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: radial-gradient(
-    380px circle at var(--mx, 50%) var(--my, 50%),
-    rgba(255, 255, 255, 0.08),
-    transparent 65%
-  );
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  pointer-events: none;
-}
-
-.tilt-card:hover::after {
-  opacity: 1;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .tilt-card,
-  .tilt-card:hover {
-    transform: none;
-    transition: none;
-  }
-}
-
 /* Light mode: cards need shadows to lift off the tinted background */
-[data-mode="light"] .tilt-card,
-[data-mode="light"] .lift {
+[data-mode="light"] .lift,
+[data-mode="light"] .glass-card {
   box-shadow:
     0 1px 2px rgba(20, 24, 40, 0.05),
-    0 8px 24px rgba(20, 24, 40, 0.08);
-}
-
-[data-mode="light"] .tilt-card:hover {
-  box-shadow:
-    0 2px 4px rgba(20, 24, 40, 0.06),
-    0 16px 40px rgba(20, 24, 40, 0.12);
+    0 8px 24px rgba(20, 24, 40, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
 /* Career timeline: scroll-progress branch line + active-commit highlight.

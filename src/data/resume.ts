@@ -120,12 +120,14 @@ export type Project = {
   stack: string[];
   github?: string;
   live?: string;
+  featured?: boolean;
 };
 
 export const projects: Project[] = [
   {
     name: "Lovable Clone",
     tag: "AI-Powered App Builder",
+    featured: true,
     github: "https://github.com/Akshityadav370/distributed-lovable-clone",
     live: "http://lovable.iakshit.space/",
     description:
