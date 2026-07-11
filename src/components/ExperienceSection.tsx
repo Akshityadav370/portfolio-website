@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef } from "react";
 import Reveal from "@/components/Reveal";
 import Section from "@/components/Section";
@@ -9,6 +10,13 @@ import { education, experience } from "@/data/resume";
 // e.g. "Saval AI (by Xansr Technologies)" -> "saval"
 const commitScope = (company: string) =>
   company.split(/[\s(]/)[0].toLowerCase();
+
+// natural image dimensions so next/image keeps the right aspect ratio
+const LOGO_DIMS: Record<string, [number, number]> = {
+  "/zotok_logo.svg": [88, 30],
+  "/byteridge_logo.jpeg": [800, 200],
+};
+const logoDims = (src: string) => LOGO_DIMS[src] ?? [512, 512];
 
 // deterministic fake short-hash so entries feel like real commits
 const commitHash = (seed: string) => {
@@ -93,18 +101,37 @@ export default function ExperienceSection() {
                     HEAD → main
                   </p>
                 )}
-                <p className="font-mono text-sm leading-relaxed">
-                  <span className="text-accent">
-                    feat({commitScope(job.company)}):
-                  </span>{" "}
-                  <span className="commit-title font-semibold text-foreground">
-                    {job.role}
-                  </span>
-                </p>
-                <p className="mt-1 font-mono text-xs text-muted">
-                  {commitHash(job.company + job.period)} · {job.period} ·{" "}
-                  {job.mode} · {job.company}
-                </p>
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <p className="font-mono text-sm leading-relaxed">
+                      <span className="text-accent">
+                        feat({commitScope(job.company)}):
+                      </span>{" "}
+                      <span className="commit-title font-semibold text-foreground">
+                        {job.role}
+                      </span>
+                    </p>
+                    <p className="mt-1 font-mono text-xs text-muted">
+                      {commitHash(job.company + job.period)} · {job.period} ·{" "}
+                      {job.mode} · {job.company}
+                    </p>
+                  </div>
+                  {job.logo && (
+                    <span
+                      title={job.company}
+                      className="flex h-10 shrink-0 items-center rounded-lg border border-edge bg-white px-1.5 py-1"
+                    >
+                      <Image
+                        src={job.logo}
+                        alt={`${job.company} logo`}
+                        width={logoDims(job.logo)[0]}
+                        height={logoDims(job.logo)[1]}
+                        className="rounded object-contain"
+                        style={{ height: "100%", width: "auto" }}
+                      />
+                    </span>
+                  )}
+                </div>
                 <p className="commit-summary mt-3 max-w-2xl leading-relaxed text-muted">
                   {job.summary}
                 </p>

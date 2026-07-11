@@ -50,6 +50,7 @@ export type Experience = {
   summary: string;
   highlights: string[];
   stack: string[];
+  logo?: string;
 };
 
 export const experience: Experience[] = [
@@ -58,6 +59,7 @@ export const experience: Experience[] = [
     company: "Zotok AI",
     period: "Jan 2026 — Present",
     mode: "Onsite",
+    logo: "/zotok_logo.svg",
     summary:
       "Frontend performance work across a micro-frontend React application.",
     highlights: [
@@ -75,6 +77,7 @@ export const experience: Experience[] = [
     company: "Kognito Kube",
     period: "Nov 2025 — Dec 2025",
     mode: "Onsite",
+    logo: "/kognito_kube_logo.png",
     summary:
       "Short engagement shipping an offline-first mobile POC and client-facing web UI.",
     highlights: [
@@ -88,6 +91,7 @@ export const experience: Experience[] = [
     company: "Saval AI (by Xansr Technologies)",
     period: "Jan 2024 — Oct 2025",
     mode: "Hybrid",
+    logo: "/saval_logo.png",
     summary:
       "Full-stack product work across mobile, web, and internal tooling.",
     highlights: [
@@ -104,6 +108,7 @@ export const experience: Experience[] = [
     company: "Byteridge",
     period: "Sep 2023 — Nov 2023",
     mode: "Remote",
+    logo: "/byteridge_logo.jpeg",
     summary: "API work on an internal agile-planning product.",
     highlights: [
       "Built REST APIs with Next.js and TypeScript for a Scrum Planning Poker tool — documented with Swagger, tested with Postman.",
