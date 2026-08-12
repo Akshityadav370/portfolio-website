@@ -19,9 +19,20 @@ function persist(key: string, value: string) {
   }
 }
 
-export function applyTheme(theme: string, mode: Mode) {
+function swapAttributes(theme: string, mode: Mode) {
   document.documentElement.dataset.mode = mode;
   document.documentElement.dataset.theme = theme;
+}
+
+/* Cross-fades the whole page between color states instead of a hard snap.
+   Native View Transitions only — no library, no-op fallback where unsupported. */
+export function applyTheme(theme: string, mode: Mode) {
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!reduced && document.startViewTransition) {
+    document.startViewTransition(() => swapAttributes(theme, mode));
+  } else {
+    swapAttributes(theme, mode);
+  }
   persist(`theme-i-${mode}`, String(poolFor(mode).indexOf(theme)));
 }
 

@@ -538,11 +538,7 @@ html.js .reveal.is-visible {
 
 /* Vibrancy: gradient text + gradient primary buttons in the theme's accents */
 .text-gradient {
-  background-image: linear-gradient(
-    100deg,
-    var(--accent),
-    var(--accent-2) 85%
-  );
+  background-image: linear-gradient(100deg, var(--accent), var(--accent-2) 85%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -574,6 +570,100 @@ html.js .reveal.is-visible {
   }
 }
 
+/* Theme cross-fade (src/lib/theme.ts applyTheme): the whole page's colors
+   blend instead of snapping when a new theme or mode loads. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 450ms;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Terminal overlay: quick boot-in entrance, faster exit than entrance. */
+@keyframes terminal-backdrop-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes terminal-backdrop-out {
+  to {
+    opacity: 0;
+  }
+}
+
+.terminal-backdrop-enter {
+  animation: terminal-backdrop-in 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.terminal-backdrop-exit {
+  animation: terminal-backdrop-out 160ms ease-in forwards;
+}
+
+@keyframes terminal-panel-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(6px);
+  }
+}
+
+@keyframes terminal-panel-out {
+  to {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+}
+
+.terminal-panel-enter {
+  animation: terminal-panel-in 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
+}
+
+.terminal-panel-exit {
+  animation: terminal-panel-out 160ms ease-in forwards;
+  will-change: transform, opacity;
+}
+
+/* Theme dropdown menu (Nav.tsx ThemeDropdown): scale+fade from the trigger
+   corner, exit faster than entrance — same pattern as the terminal overlay. */
+@keyframes theme-dropdown-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-4px);
+  }
+}
+
+@keyframes theme-dropdown-out {
+  to {
+    opacity: 0;
+    transform: scale(0.97) translateY(-2px);
+  }
+}
+
+.theme-dropdown-enter {
+  animation: theme-dropdown-in 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: top right;
+}
+
+.theme-dropdown-exit {
+  animation: theme-dropdown-out 130ms ease-in forwards;
+  transform-origin: top right;
+  will-change: transform, opacity;
+}
+
+/* Projects file-switch (ProjectsSection.tsx): the editor pane's content
+   fades/rises in on every activeIndex change, like a buffer loading —
+   chrome (tabs, status bar) stays instant. */
+@keyframes project-pane-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+.project-pane-enter {
+  animation: project-pane-in 240ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -591,5 +681,18 @@ html.js .reveal.is-visible {
   }
   .fx-spot {
     display: none;
+  }
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+  .terminal-backdrop-enter,
+  .terminal-backdrop-exit,
+  .terminal-panel-enter,
+  .terminal-panel-exit,
+  .theme-dropdown-enter,
+  .theme-dropdown-exit,
+  .project-pane-enter {
+    animation: none;
   }
 }

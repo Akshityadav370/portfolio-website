@@ -49,18 +49,34 @@ function Swatch({ theme }: { theme: string }) {
   );
 }
 
+const DROPDOWN_CLOSE_MS = 130;
+
 function ThemeDropdown() {
   const theme = useCurrentTheme();
   const [open, setOpen] = useState(false);
+  const [closing, setClosing] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const requestClose = () => {
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduced) {
+      setOpen(false);
+      return;
+    }
+    setClosing(true);
+    window.setTimeout(() => {
+      setOpen(false);
+      setClosing(false);
+    }, DROPDOWN_CLOSE_MS);
+  };
 
   useEffect(() => {
     if (!open) return;
     const onPointerDown = (e: PointerEvent) => {
-      if (!containerRef.current?.contains(e.target as Node)) setOpen(false);
+      if (!containerRef.current?.contains(e.target as Node)) requestClose();
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === "Escape") requestClose();
     };
     window.addEventListener("pointerdown", onPointerDown);
     window.addEventListener("keydown", onKey);
@@ -74,7 +90,7 @@ function ThemeDropdown() {
 
   const pick = (name: string) => {
     setThemeByName(name);
-    setOpen(false);
+    requestClose();
   };
 
   const group = (label: string, pool: readonly string[]) => (
@@ -107,7 +123,7 @@ function ThemeDropdown() {
     <div ref={containerRef} className="relative">
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => (open ? requestClose() : setOpen(true))}
         aria-haspopup="menu"
         aria-expanded={open}
         title="Change theme"
@@ -117,7 +133,7 @@ function ThemeDropdown() {
         <span className="hidden sm:inline">{theme}</span>
         <span
           aria-hidden
-          className={`text-[10px] transition-transform ${open ? "rotate-180" : ""}`}
+          className={`text-[10px] transition-transform ${open && !closing ? "rotate-180" : ""}`}
         >
           ▾
         </span>
@@ -126,7 +142,9 @@ function ThemeDropdown() {
       {open && (
         <div
           role="menu"
-          className="glass absolute right-0 top-11 z-50 max-h-[70vh] w-56 overflow-y-auto rounded-xl p-1.5 !bg-surface"
+          className={`glass absolute right-0 top-11 z-50 max-h-[70vh] w-56 overflow-y-auto rounded-xl p-1.5 !bg-surface ${
+            closing ? "theme-dropdown-exit" : "theme-dropdown-enter"
+          }`}
         >
           {group("dark", DARK_THEMES)}
           {group("light", LIGHT_THEMES)}

@@ -132,7 +132,7 @@ export default function ExperienceSection() {
                     </span>
                   )}
                 </div>
-                <p className="commit-summary mt-3 max-w-2xl leading-relaxed text-muted">
+                <p className="commit-summary mt-3 max-w-xl leading-relaxed text-muted">
                   {job.summary}
                 </p>
 
@@ -150,7 +150,7 @@ export default function ExperienceSection() {
                     {job.highlights.map((highlight) => (
                       <li
                         key={highlight}
-                        className="flex max-w-2xl gap-3 text-sm text-muted"
+                        className="flex max-w-lg gap-3 text-sm text-muted"
                       >
                         <span aria-hidden className="mt-0.5 text-accent">
                           +

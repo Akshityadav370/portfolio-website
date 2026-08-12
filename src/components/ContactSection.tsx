@@ -4,62 +4,77 @@ import {
   siGithub,
   siLeetcode,
 } from "simple-icons";
+import CopyEmailButton from "@/components/CopyEmailButton";
 import MiniTerminal from "@/components/MiniTerminal";
 import Reveal from "@/components/Reveal";
 import { codingProfiles, profile } from "@/data/resume";
 
-function BrandIcon({ path }: { path: string }) {
+// Same brand-color mechanism as SkillIcon.tsx: near-black marks (GitHub)
+// switch to the theme foreground in dark mode via .si-invert so they stay
+// visible; saturated brand hues (LinkedIn blue, LeetCode orange, …) hold.
+function BrandIcon({
+  path,
+  hex,
+  invert = false,
+}: {
+  path: string;
+  hex: string;
+  invert?: boolean;
+}) {
   return (
-    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-      <path d={path} />
-    </svg>
+    <span
+      aria-hidden
+      className={`skill-icon ${invert ? "si-invert" : ""}`}
+      style={{ "--brand": `#${hex}` } as React.CSSProperties}
+    >
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+        <path d={path} />
+      </svg>
+    </span>
   );
 }
 
 // simple-icons dropped LinkedIn (brand policy), so profileIcons only covers
-// the coding platforms; LinkedIn keeps a hand-drawn path below.
-const profileIcons: Record<string, string> = {
-  LeetCode: siLeetcode.path,
-  GeeksforGeeks: siGeeksforgeeks.path,
-  "Coding Ninjas": siCodingninjas.path,
+// the coding platforms; LinkedIn keeps a hand-drawn path + its official hex.
+const profileIcons: Record<string, { path: string; hex: string }> = {
+  LeetCode: { path: siLeetcode.path, hex: siLeetcode.hex },
+  GeeksforGeeks: { path: siGeeksforgeeks.path, hex: siGeeksforgeeks.hex },
+  "Coding Ninjas": { path: siCodingninjas.path, hex: siCodingninjas.hex },
 };
 
-function LinkedInIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.225 0z" />
-    </svg>
-  );
-}
+const LINKEDIN_PATH =
+  "M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.225 0z";
+const LINKEDIN_HEX = "0A66C2";
 
 const iconLink =
-  "glass-chip flex h-12 w-12 items-center justify-center rounded-full border border-edge text-muted transition-all hover:-translate-y-0.5 hover:border-accent/50 hover:text-accent";
+  "glass-chip flex h-12 w-12 items-center justify-center rounded-full border border-edge text-muted transition-all hover:-translate-y-0.5 hover:border-accent/50";
 
 export default function ContactSection() {
   return (
-    <section id="contact" className="mx-auto max-w-5xl px-6 py-20 sm:py-28">
+    <section id="contact" className="mx-auto max-w-5xl px-6 py-20 sm:py-24">
       <Reveal>
         <div className="glass-card lift rounded-3xl border border-edge p-8 sm:p-12">
           <div className="grid items-center gap-10 lg:grid-cols-2">
             <div>
-              <p className="font-mono text-sm text-accent">04 · contact</p>
+              <p className="font-mono text-xs text-accent">04 · contact</p>
               <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-5xl">
                 <span className="text-gradient">
                   Let&apos;s build something fast.
                 </span>
               </h2>
               <p className="mt-4 max-w-md leading-relaxed text-muted">
-                Open to full-stack and frontend roles. The quickest way to
-                reach me is email — I usually reply within a day.
+                Open to full-stack and frontend roles. The quickest way to reach
+                me is email — I usually reply within a day.
               </p>
 
-              <div className="mt-8">
+              <div className="mt-8 flex flex-wrap items-center gap-3">
                 <a
                   href={`mailto:${profile.email}`}
                   className="btn-gradient inline-block rounded-full px-6 py-3 text-sm font-medium text-background"
                 >
                   {profile.email}
                 </a>
+                <CopyEmailButton email={profile.email} />
               </div>
 
               {/* socials + coding profiles */}
@@ -72,7 +87,7 @@ export default function ContactSection() {
                   title="GitHub"
                   className={iconLink}
                 >
-                  <BrandIcon path={siGithub.path} />
+                  <BrandIcon path={siGithub.path} hex={siGithub.hex} invert />
                 </a>
                 <a
                   href={profile.linkedin}
@@ -82,7 +97,7 @@ export default function ContactSection() {
                   title="LinkedIn"
                   className={iconLink}
                 >
-                  <LinkedInIcon />
+                  <BrandIcon path={LINKEDIN_PATH} hex={LINKEDIN_HEX} />
                 </a>
                 {codingProfiles
                   .filter((p) => p.url)
@@ -97,7 +112,10 @@ export default function ContactSection() {
                       className={iconLink}
                     >
                       {profileIcons[p.name] ? (
-                        <BrandIcon path={profileIcons[p.name]} />
+                        <BrandIcon
+                          path={profileIcons[p.name].path}
+                          hex={profileIcons[p.name].hex}
+                        />
                       ) : (
                         <span className="font-mono text-xs font-semibold">
                           {p.short}

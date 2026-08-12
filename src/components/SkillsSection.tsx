@@ -52,6 +52,14 @@ const versionFor = (skill: string): string => {
   return "^familiar";
 };
 
+// color the evidence tier itself: strongest signal gets the primary accent,
+// shipped-but-not-job-proven gets the secondary accent, familiar recedes to muted
+const VERSION_COLOR: Record<string, string> = {
+  "^prod": "text-accent",
+  "^shipped": "text-accent-2",
+  "^familiar": "text-muted",
+};
+
 const jsonKey = (title: string) => title.toLowerCase().replace(/[^a-z]+/g, "-");
 
 // "Saval AI (by Xansr Technologies)" -> "Saval AI"
@@ -94,39 +102,42 @@ export default function SkillsSection() {
                     </span>
                     <span className="text-muted">: {"{"}</span>
                   </p>
-                  {group.skills.map((skill) => (
-                    <p
-                      key={skill}
-                      onMouseEnter={() => setHovered(skill)}
-                      onMouseLeave={() => setHovered(null)}
-                      onClick={() => setHovered(skill)}
-                      className={`-mx-2 cursor-default rounded px-2 pl-6 transition-colors ${
-                        hovered === skill
-                          ? "bg-accent/10"
-                          : "hover:bg-accent/5"
-                      }`}
-                    >
-                      <SkillIcon
-                        name={skill}
-                        size={13}
-                        className="mr-1.5 align-[-0.125em]"
-                      />
-                      <span className="text-foreground">
-                        &quot;{normalize(skill)}&quot;
-                      </span>
-                      <span className="text-muted">: </span>
-                      <span className="text-accent">
-                        &quot;{versionFor(skill)}&quot;
-                      </span>
-                      <span className="text-muted">,</span>
-                      {hovered === skill && (
-                        <span className="ghost-comment text-muted">
-                          {" "}
-                          {ghostComment(skill)}
+                  {group.skills.map((skill) => {
+                    const version = versionFor(skill);
+                    return (
+                      <p
+                        key={skill}
+                        onMouseEnter={() => setHovered(skill)}
+                        onMouseLeave={() => setHovered(null)}
+                        onClick={() => setHovered(skill)}
+                        className={`-mx-2 cursor-default rounded px-2 pl-6 transition-colors ${
+                          hovered === skill
+                            ? "bg-accent/10"
+                            : "hover:bg-accent/5"
+                        }`}
+                      >
+                        <SkillIcon
+                          name={skill}
+                          size={13}
+                          className="mr-1.5 align-[-0.125em]"
+                        />
+                        <span className="text-foreground">
+                          &quot;{normalize(skill)}&quot;
                         </span>
-                      )}
-                    </p>
-                  ))}
+                        <span className="text-muted">: </span>
+                        <span className={VERSION_COLOR[version]}>
+                          &quot;{version}&quot;
+                        </span>
+                        <span className="text-muted">,</span>
+                        {hovered === skill && (
+                          <span className="ghost-comment text-muted">
+                            {" "}
+                            {ghostComment(skill)}
+                          </span>
+                        )}
+                      </p>
+                    );
+                  })}
                   <p className="text-muted">{"},"}</p>
                 </div>
               ))}

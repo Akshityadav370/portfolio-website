@@ -117,7 +117,10 @@ export default function ProjectsSection() {
               </div>
 
               {/* rendered "markdown" */}
-              <div className="min-h-[26rem] px-5 py-5 sm:px-8">
+              <div
+                key={active.name}
+                className="project-pane-enter min-h-[26rem] px-5 py-5 sm:px-8"
+              >
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
                     <h3 className="flex flex-wrap items-center gap-3 text-2xl font-semibold">
@@ -168,7 +171,7 @@ export default function ProjectsSection() {
                   </div>
                 </div>
 
-                <p className="mt-4 max-w-2xl leading-relaxed text-muted">
+                <p className="mt-4 max-w-xl leading-relaxed text-muted">
                   {active.description}
                 </p>
 
@@ -182,7 +185,7 @@ export default function ProjectsSection() {
                   {active.highlights.map((highlight) => (
                     <li
                       key={highlight}
-                      className="flex max-w-2xl gap-3 text-sm text-muted"
+                      className="flex max-w-lg gap-3 text-sm text-muted"
                     >
                       <span aria-hidden className="mt-0.5 text-accent">
                         -

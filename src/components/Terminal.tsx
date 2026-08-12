@@ -135,18 +135,65 @@ function run(input: string): { out: string[]; action?: "clear" | "exit" } {
 }
 
 const banner = (): Line[] => [
-  { kind: "out", text: `Last login: ${new Date().toLocaleString()} on ttys001` },
-  { kind: "out", text: "Welcome to iakshit.space 👋  Type `help` to look around." },
+  {
+    kind: "out",
+    text: `Last login: ${new Date().toLocaleString()} on ttys001`,
+  },
+  {
+    kind: "out",
+    text: "Welcome to iakshit.space 👋  Type `help` to look around.",
+  },
 ];
+
+const KONAMI = [
+  "ArrowUp",
+  "ArrowUp",
+  "ArrowDown",
+  "ArrowDown",
+  "ArrowLeft",
+  "ArrowRight",
+  "ArrowLeft",
+  "ArrowRight",
+  "b",
+  "a",
+];
+
+const konamiBanner = (): Line[] => [
+  { kind: "out", text: "↑ ↑ ↓ ↓ ← → ← → b a — nice." },
+  {
+    kind: "out",
+    text: "achievement unlocked: cheat codes still work in 2026.",
+  },
+  ...banner(),
+];
+
+const CLOSE_MS = 160;
 
 export default function Terminal() {
   const [open, setOpen] = useState(false);
+  const [closing, setClosing] = useState(false);
   const [lines, setLines] = useState<Line[]>([]);
   const [value, setValue] = useState("");
   const [history, setHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
+  const konamiProgress = useRef(0);
+
+  const requestClose = () => {
+    const reduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    if (reduced) {
+      setOpen(false);
+      return;
+    }
+    setClosing(true);
+    window.setTimeout(() => {
+      setOpen(false);
+      setClosing(false);
+    }, CLOSE_MS);
+  };
 
   useEffect(() => {
     const onOpen = () => {
@@ -159,6 +206,23 @@ export default function Terminal() {
         if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") return;
         e.preventDefault();
         onOpen();
+        return;
+      }
+      if (open) return;
+      const target = e.target as HTMLElement;
+      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") return;
+      const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+      const expected = KONAMI[konamiProgress.current];
+      konamiProgress.current =
+        key === expected
+          ? konamiProgress.current + 1
+          : key === KONAMI[0]
+            ? 1
+            : 0;
+      if (konamiProgress.current === KONAMI.length) {
+        konamiProgress.current = 0;
+        setLines(konamiBanner());
+        setOpen(true);
       }
     };
     window.addEventListener("terminal:open", onOpen);
@@ -167,7 +231,7 @@ export default function Terminal() {
       window.removeEventListener("terminal:open", onOpen);
       window.removeEventListener("keydown", onKey);
     };
-  }, []);
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -196,7 +260,7 @@ export default function Terminal() {
       return;
     }
     if (action === "exit") {
-      setOpen(false);
+      requestClose();
       return;
     }
     setLines((prev) => [
@@ -208,7 +272,7 @@ export default function Terminal() {
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") submit();
-    else if (e.key === "Escape") setOpen(false);
+    else if (e.key === "Escape") requestClose();
     else if (e.key === "ArrowUp") {
       e.preventDefault();
       if (!history.length) return;
@@ -240,13 +304,17 @@ export default function Terminal() {
 
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
-      onClick={() => setOpen(false)}
+      className={`fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm ${
+        closing ? "terminal-backdrop-exit" : "terminal-backdrop-enter"
+      }`}
+      onClick={requestClose}
     >
       <div
         role="dialog"
         aria-label="Interactive terminal"
-        className="flex h-[26rem] w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-edge bg-surface/95 font-mono text-sm shadow-2xl backdrop-blur-md"
+        className={`flex h-[26rem] w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-edge bg-surface/95 font-mono text-sm shadow-2xl backdrop-blur-md ${
+          closing ? "terminal-panel-exit" : "terminal-panel-enter"
+        }`}
         onClick={(e) => {
           e.stopPropagation();
           inputRef.current?.focus();
@@ -260,7 +328,10 @@ export default function Terminal() {
             visitor@iakshit.space: ~
           </p>
         </div>
-        <div ref={bodyRef} className="flex-1 space-y-1 overflow-y-auto px-4 py-3">
+        <div
+          ref={bodyRef}
+          className="flex-1 space-y-1 overflow-y-auto px-4 py-3"
+        >
           {lines.map((line, i) =>
             line.kind === "cmd" ? (
               <p key={i} className="text-foreground">
