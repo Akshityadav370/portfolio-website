@@ -1,6 +1,6 @@
 export const profile = {
   name: "Akshit Yadav Aesham",
-  role: "Software Development Engineer 1 - Frontend",
+  role: "Software Development Engineer 1",
   company: "Zotok AI",
   location: "Hyderabad, India",
   email: "akshit07032001@gmail.com",
@@ -16,7 +16,11 @@ export const profile = {
 
 // Coding profiles — entries with an empty url are hidden until filled in.
 export const codingProfiles = [
-  { name: "LeetCode", short: "LC", url: "https://leetcode.com/u/bucephalus370/" },
+  {
+    name: "LeetCode",
+    short: "LC",
+    url: "https://leetcode.com/u/bucephalus370/",
+  },
   {
     name: "GeeksforGeeks",
     short: "GfG",
