@@ -20,6 +20,7 @@ const ALIASES: Record<string, string[]> = {
   sql: ["postgresql", "mysql"],
   kubernetes: ["gke"],
   "google cloud": ["gke"],
+  redux: ["redux toolkit"],
 };
 
 const keysFor = (skill: string) => {

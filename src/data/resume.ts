@@ -59,22 +59,20 @@ export type Experience = {
 
 export const experience: Experience[] = [
   {
-    role: "Software Development Engineer 1 — Frontend",
+    role: "Software Development Engineer 1",
     company: "Zotok AI",
     period: "Jan 2026 — Present",
     mode: "Onsite",
     logo: "/zotok_logo.svg",
     summary:
-      "Frontend performance work across a micro-frontend React application.",
+      "Performance and testing work across a micro-frontend React application and its Spring Boot services.",
     highlights: [
-      "Collaborated on performance improvements that took initial page load from 25–30s to ~1.5s and cut build time by ~35%.",
-      "Eliminated legacy React Native dependencies from a web-only codebase with web-native replacements and Webpack module aliases.",
-      "Built a custom NX executor plugin to bypass NX's wrapped Webpack — unlocking full control over HMR, chunk splitting, and loaders.",
-      "Fixed build mode from development to production across all deploy environments, enabling minification and dead-code removal.",
-      "Rolled out route- and component-level lazy loading across all remote apps, helping cut the initial JS payload by over 50%.",
-      "Revamped the Analytics Dashboard, Threads, and internal tools UI/UX using Claude Code and Figma MCP.",
+      "Collaborated on performance improvements that took initial page load from 25–30s to ~1.5s and cut build time by ~35% across a micro-frontend React app.",
+      "Built a custom NX executor plugin for full Webpack control — HMR, chunk splitting, custom loaders — and rolled out route- and component-level lazy loading, cutting the initial JS payload by over 50%.",
+      "Revamped the Analytics Dashboard and internal tools UI/UX using Claude Code and Figma MCP.",
+      "Wrote unit tests (JUnit 5, Mockito) and integration tests (Spring Boot Test, MockMvc), maintaining over 75% code coverage.",
     ],
-    stack: ["React", "Webpack", "NX", "Micro-frontends", "TypeScript"],
+    stack: ["React", "Webpack", "NX", "Micro-frontends", "Spring Boot", "TypeScript"],
   },
   {
     role: "Software Engineer",
@@ -99,13 +97,13 @@ export const experience: Experience[] = [
     summary:
       "Full-stack product work across mobile, web, and internal tooling.",
     highlights: [
-      "Migrated the React Native Android app to iOS and shipped App Store in-app purchases with webhook-based validation on both platforms.",
-      "Built 70–75% of the mobile app screens with React Native, Context API, RN Skia, and TanStack Query.",
-      "Built internal tools (News Editor, Flashcards, Question Management, analytics, remote config) with Next.js and FastAPI.",
-      "Processed ML datasets to improve AI model accuracy.",
-      "Built interactive 3D websites and game prototypes with Three.js, GSAP, and TypeScript.",
+      "Migrated the React Native Android app to iOS and built 70–75% of the mobile app's screens with React Native, Context API, RN Skia, and TanStack Query.",
+      "Implemented server-side webhook validation for iOS/Android in-app purchases and synced subscription state.",
+      "Built FastAPI backend services for analytics, deployment, and remote-config tools, and integrated frontend/mobile clients with these REST APIs — handling pagination, caching, and error states.",
+      "Optimized MySQL schema and queries (joins, subqueries, stored procedures, composite indexes), cutting average query time from 1.2s to 180ms; fixed N+1 query issues with @EntityGraph/JOIN FETCH and resolved concurrent update conflicts via optimistic locking (@Version).",
+      "Built data-processing scripts and services to clean and transform ML datasets, improving model accuracy; containerized backend services with Docker and deployed via CI/CD pipelines.",
     ],
-    stack: ["React Native", "Next.js", "FastAPI", "Three.js", "GSAP"],
+    stack: ["React Native", "FastAPI", "MySQL", "Docker"],
   },
   {
     role: "SDE Intern",
@@ -151,13 +149,16 @@ export const projects: Project[] = [
     stack: [
       "Java",
       "Spring Boot",
+      "Spring Cloud",
       "Spring AI",
       "Kafka",
       "PostgreSQL",
       "React",
       "TypeScript",
+      "Redux Toolkit",
       "Nx",
       "Docker",
+      "Google Cloud",
       "GKE",
     ],
   },
