@@ -8,7 +8,7 @@ export const profile = {
   github: "https://github.com/Akshityadav370",
   linkedin: "https://www.linkedin.com/in/akshit-yadav/",
   resumeUrl:
-    "https://drive.google.com/file/d/1IBRhWwx4GGoY4dewu2UbNS52AmsdZoeM/view?usp=sharing",
+    "https://drive.google.com/file/d/15u21LumxtBGHCsZC-0KmLXRF2FHgKNPp/view?usp=sharing",
   tagline: "I build fast web, mobile & AI-powered products.",
   intro:
     "Full-stack engineer building across web, mobile, and AI — React micro-frontends and Spring Boot microservices, real-time apps, and LLM-powered products end to end.",
