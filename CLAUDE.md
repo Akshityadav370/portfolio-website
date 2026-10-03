@@ -2,6 +2,14 @@
 
 # Project context (handoff notes — keep updated as the site evolves)
 
+## Current design — October 2026
+
+The user approved **Inside the Machine with warm workshop materials** and the site has been revamped accordingly. The active page is `src/app/page.tsx`, styled by `src/app/workshop.css` after the legacy globals. It uses `src/components/workshop/` for navigation, interactive 3D scenes, project selection, and skill evidence. The procedural Three.js renderer lives in `src/lib/workshop-scene.ts` and is dynamically imported near the viewport. Scene rendering stops offscreen and in hidden tabs; reduced motion renders still views, and a CSS assembly is the WebGL/no-JS fallback.
+
+The sections are hero → projects → experience/education → skills/achievements → contact. The fixed palette is graphite, warm cream, and copper. The old rotating editor themes, terminal, and performance HUD are no longer mounted. Existing legacy components remain in the repository for reference. Content still comes from `src/data/resume.ts`, without changes to the owner's claims or URLs. Keep the full-stack/AI positioning and honest team attribution.
+
+The notes below describe the previous design and its history, except that **Owner preferences**, **Verified facts**, and unrelated backlog items still apply. The near-zero-JS claim is superseded by the deferred Three.js design.
+
 ## What this is
 Akshit's portfolio at **https://iakshit.space** — Next.js static export (`output: "export"`) + Tailwind v4, deployed on Vercel (project lives under the `xansr` team scope — his deliberate choice, do not suggest moving it). Auto-deploys on push to `main` (repo: github.com/Akshityadav370/portfolio-website). The pitch is **speed**: near-zero JS (~5kb, live PerfHud pill bottom-right proves it), no animation libraries — everything is CSS + small rAF loops. Only npm dep added so far: `simple-icons` (tree-shaken brand icon paths — used by `SkillIcon.tsx`, which maps ~55 skill names to brand-colored icons across skills.json rows and all stack chips; near-black brands auto-switch to theme foreground in dark mode via `.si-invert`; AWS/OpenAI/Zustand/Liveblocks have no icons in the library and fall back to plain text).
 
