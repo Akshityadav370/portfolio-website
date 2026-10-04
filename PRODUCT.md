@@ -21,7 +21,7 @@ Personal portfolio for an active job search targeting **full-stack roles** — n
 
 **Full-stack + AI-native range** is the headline claim: 2.5+ years shipping across web, mobile, backend, and LLM-powered products end to end (React micro-frontends, Spring Boot microservices, real-time apps, RAG/LLM tooling) — range a frontend-only or backend-only competing portfolio couldn't truthfully copy.
 
-This supersedes the historical "speed as proof-of-craft" framing. The current 3D workshop design leads with full-stack/AI-native range, while engineering quality remains supporting evidence. See the current-design notes in `CLAUDE.md`.
+This supersedes the historical "speed as proof-of-craft" framing. The current playable miniature-world design leads with full-stack/AI-native range, while engineering quality remains supporting evidence. See the current-design notes in `CLAUDE.md`.
 
 ## Operating Context
 
@@ -29,6 +29,10 @@ This supersedes the historical "speed as proof-of-craft" framing. The current 3D
 - Content is not hand-authored per page — everything renders from `src/data/resume.ts` (profile, experience, projects, skills, achievements, education). Editing product content means editing that file, not markup.
 - Akshit edits `resume.ts` / `layout.tsx` directly between work sessions — his latest wording is authoritative and should never be silently reverted.
 - Currently employed full-time at Zotok AI while conducting this search.
+
+## Current presentation
+
+The user approved a Squid Game-inspired miniature portfolio on a separate branch, preserving the prior workshop design at `703dd5f` on `feat/3d-workshop-portfolio`. Visitors can explore the invitation, player record, career staircase, control room, optional games, equipment room, and contact chapter. Mini-games never gate résumé or project access. Music remains owner-supplied; generated cues are opt-in and all gameplay cues have visual equivalents.
 
 ## Capabilities and Constraints
 

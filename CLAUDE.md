@@ -2,7 +2,15 @@
 
 # Project context (handoff notes — keep updated as the site evolves)
 
-## Current design — October 2026
+## Current design — Player 370, October 4, 2026
+
+The workshop design is saved on `feat/3d-workshop-portfolio` at `703dd5f`. The user asked for a separate branch so the game version can be evaluated independently. The active branch is `feat/player-370-game-portfolio`.
+
+The current page is a Squid Game-inspired miniature world: a reversible kraft-paper invitation with circle/triangle/square symbols, player dossier, pastel staircase career journey, project control room, three playable mini-games, equipment room with skill evidence, and an exit/contact chapter. It uses `src/app/trials.css` and `src/components/trials/`, with procedural geometry in `src/lib/trials-scene.ts`. Gameplay rules live in `src/lib/trials-engine.ts`, with regression tests in `tests/trials-engine.test.mjs`. Full rounds also have browser verification. The experience is nonviolent, games are optional, and all existing profile claims/links remain in `resume.ts`.
+
+Audio is OFF until a visitor opts in. Only original synthesized cues are bundled. The owner offered to supply permitted music; populate `src/data/trials-audio.ts` with supplied files, attribution, and license links. See `public/audio/README.md`. Do not silently substitute the show's recordings. Sound must never be required for a game.
+
+## Saved workshop design — October 2026
 
 The user approved **Inside the Machine with warm workshop materials** and the site has been revamped accordingly. The active page is `src/app/page.tsx`, styled by `src/app/workshop.css` after the legacy globals. It uses `src/components/workshop/` for navigation, interactive 3D scenes, project selection, and skill evidence. The procedural Three.js renderer lives in `src/lib/workshop-scene.ts` and is dynamically imported near the viewport. Scene rendering stops offscreen and in hidden tabs; reduced motion renders still views, and a CSS assembly is the WebGL/no-JS fallback.
 
