@@ -8,7 +8,12 @@ import {
   heroFacts,
   education,
 } from "@/data/resume";
-import { ZONES, type GameId, type ZoneId } from "@/lib/world/rules";
+import {
+  ZONES,
+  RED_LIGHT_TIME_LIMIT,
+  type GameId,
+  type ZoneId,
+} from "@/lib/world/rules";
 import type { Snapshot, WorldRuntime } from "@/lib/world/runtime";
 
 type Screen = "invitation" | "world" | "map" | "pause" | "dossier" | "briefing";
@@ -21,8 +26,8 @@ const instructions: Record<
     description: "One field. One finish line. Keep your eyes on the signal.",
     steps: [
       "Walk forward on green. Your position on the field is your progress.",
-      "Stop when she turns. Moving on red ends the round.",
-      "Cross the far line before 65 seconds.",
+      "Green lamp: move while she faces away. Red lamp: release movement as she turns.",
+      "Cross within 45 seconds. You have a short grace period during her turn; freeze before she faces you.",
     ],
   },
   mingle: {
@@ -452,7 +457,7 @@ export default function WorldExperience() {
           )}
           {trial && (
             <section
-              className={`world-trial-hud phase-${trial.phase}`}
+              className={`world-trial-hud game-${trial.kind} phase-${trial.phase}`}
               aria-label="Game status"
             >
               <div>
@@ -470,12 +475,14 @@ export default function WorldExperience() {
                 {trial.status === "won"
                   ? "ROUND COMPLETE"
                   : trial.status === "lost"
-                    ? "TRY AGAIN"
+                    ? trial.kind === "red-light"
+                      ? "ELIMINATED"
+                      : "TRY AGAIN"
                     : trial.kind === "red-light"
                       ? trial.phase === "green"
                         ? "GREEN LIGHT"
                         : trial.phase === "warning"
-                          ? "STOP NOW"
+                          ? "RED · STOP NOW"
                           : "RED LIGHT"
                       : trial.kind === "mingle"
                         ? trial.phase === "spinning"
@@ -491,7 +498,7 @@ export default function WorldExperience() {
               />
               <small>
                 {trial.kind === "red-light"
-                  ? `${Math.floor(trial.progress * 100)}% ACROSS · ${Math.ceil(65 - trial.elapsed)}s LEFT`
+                  ? `${Math.floor(trial.progress * 100)}% ACROSS · ${Math.max(0, Math.ceil(RED_LIGHT_TIME_LIMIT - trial.elapsed))}s LEFT`
                   : trial.kind === "mingle"
                     ? `ROUND ${Math.min(trial.round + 1, 3)} / 3 · ${Math.ceil((trial.phase === "spinning" ? 4.5 : 10) - trial.phaseTime)}s`
                     : `${trial.round} / 5 CROSSINGS`}
@@ -499,6 +506,11 @@ export default function WorldExperience() {
               {trial.status !== "playing" && (
                 <button
                   className="world-primary"
+                  disabled={
+                    trial.kind === "red-light" &&
+                    snapshot.elimination >= 0 &&
+                    snapshot.elimination < 1.2
+                  }
                   onClick={() => {
                     runtime.current?.startGame(trial.kind);
                     host.current?.focus();

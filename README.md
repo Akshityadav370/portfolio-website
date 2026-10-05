@@ -27,11 +27,11 @@ Movement includes acceleration, ground braking, limited air steering, buffered j
 
 Eight connected places contain the player profile, career staircase, project control room, skill equipment room, three game arenas, and contact portal. Portfolio facts come from `src/data/resume.ts`.
 
-- **Red Light, Green Light:** physically cross the field. A short turning warning precedes red; movement on red ends the round.
+- **Red Light, Green Light:** physically cross the field. Stop yourself when the doll turns. Each attempt randomizes green/red durations, with a forgiving turning grace period and a 45-second clock above the doll. Movement after the red-light turn causes guard gunfire, a brief blood-particle impact, and a collapse.
 - **Mingle:** walk into the correct numbered room after the carousel stops. Three rounds, ten seconds per choice.
 - **Jump Rope:** move between five bridge checkpoints and jump over the rope on each crossing.
 
-Games pause with menus, window blur, and hidden tabs. Music is off initially and follows game phases after opting in. Owner-supplied tracks from `src/data/` are copied into `public/audio/world/` for static hosting; original files are preserved. Scenery GLBs are from Kenney’s CC0 Nature Kit; see `public/models/ATTRIBUTION.md` and the included license. Characters and architecture are generated in code.
+Games pause with menus, window blur, and hidden tabs. Music and synthesized gunfire are off initially and follow the sound toggle and volume setting. Owner-supplied tracks from `src/data/` are copied into `public/audio/world/` for static hosting; original files are preserved. Scenery GLBs are from Kenney’s CC0 Nature Kit; see `public/models/ATTRIBUTION.md` and the included license. Characters and architecture are generated in code.
 
 ## Automatic third-person camera
 
@@ -71,3 +71,5 @@ npm run build
 ```
 
 The test runner transpiles only the dependency-free rules module using the existing TypeScript dependency, so it runs on Node 20 without adding a test framework. The production export is written to `out/`. Existing Vercel hosting settings are unchanged.
+
+Red Light now has paired red/green traffic lights beside the doll. Green lasts 1–2 seconds; the red lamp starts a 0.85–1.05-second turn before movement checks begin. The 45-second deadline and manual stopping remain. Guards raise and recoil their rifles; bullets travel to the player before a brief blood-particle impact and collapse. Reduced motion suppresses flashes and projectile/impact particles.

@@ -8,7 +8,7 @@ Active branch: `feat/player-370-open-world`. The saved miniature version is `fea
 
 The root page now mounts a real third-person Three.js world with walking, jumping, camera orbit, collision, touch controls, map/fast travel, and eight connected destinations. Portfolio dossiers open near physical markers. Red Light, Mingle, and Jump Rope operate on the same character’s world position. The original scrolling page is preserved at `/portfolio` as a direct route and WebGL fallback. Portfolio facts remain in `src/data/resume.ts`.
 
-`src/components/world/WorldExperience.tsx` owns React UI, `src/app/world.css` its styling, and `src/lib/world/` contains the renderer, geometry, audio, and DOM-independent physics/game rules. `tests/world-rules.test.mjs` tests those rules. The character motor now has acceleration/braking, buffered/coyote jumps, ceiling and landing collision. Camera math in `src/lib/world/camera.ts` uses swept camera volumes, immediate obstruction pull-in, eased recovery, smooth orbit, and C/button recentering. Tests cover these behaviors in `tests/world-camera.test.mjs` and the rules suite. Keep Red Light’s warning brake explicit so movement inertia does not cause unfair elimination. Keep the earlier trial modules because `/portfolio` still uses them.
+`src/components/world/WorldExperience.tsx` owns React UI, `src/app/world.css` its styling, and `src/lib/world/` contains the renderer, geometry, audio, and DOM-independent physics/game rules. `tests/world-rules.test.mjs` tests those rules. The character motor now has acceleration/braking, buffered/coyote jumps, ceiling and landing collision. Camera math in `src/lib/world/camera.ts` uses swept camera volumes, immediate obstruction pull-in, eased recovery, smooth orbit, and C/button recentering. Tests cover these behaviors in `tests/world-camera.test.mjs` and the rules suite. Red Light uses manual stopping with short 1–2-second green periods and a 0.85–1.05-second turning grace period. The red traffic lamp lights at the start of the turn; movement is checked once she faces the player; a fresh seeded schedule is generated for each attempt. Keep the earlier trial modules because `/portfolio` still uses them.
 
 The owner supplied three MP3s in `src/data/` and explicitly requested using them. Runtime copies live in `public/audio/world/`. Music is opt-in and follows game phase/pause state. Local CC0 Kenney scenery models and their license are under `public/models/`; architecture and characters are procedural. Visual game signals work with audio disabled.
 
@@ -18,7 +18,7 @@ Camera follow is enabled by default, with a manual-orbit option in the pause men
 
 ## Sketchbook physics reference
 
-The owner requested using `/home/akshit/Sketchbook` as the reference for consecutive physics improvements. Its MIT spring helper is adapted in `rules.ts`; runtime uses a true 120 Hz accumulator with previous/current body interpolation. Ground and airborne movement are separate, the carousel carries riders and passes velocity into jumps, and the avatar blends locomotion poses with spring turning and banking. See `docs/sketchbook-physics.md` and `public/licenses/Sketchbook-MIT.txt`. Do not edit the reference repository. Existing camera clearance and Red Light’s explicit warning brake remain intentional.
+The owner requested using `/home/akshit/Sketchbook` as the reference for consecutive physics improvements. Its MIT spring helper is adapted in `rules.ts`; runtime uses a true 120 Hz accumulator with previous/current body interpolation. Ground and airborne movement are separate, the carousel carries riders and passes velocity into jumps, and the avatar blends locomotion poses with spring turning and banking. See `docs/sketchbook-physics.md` and `public/licenses/Sketchbook-MIT.txt`. Do not edit the reference repository. Existing camera clearance remains intentional; Red Light’s old warning brake was removed at the owner’s request.
 
 ## Saved workshop design — October 2026
 
@@ -62,3 +62,7 @@ Akshit's portfolio at **https://iakshit.space** — Next.js static export (`outp
 - `www.iakshit.space` CNAME was not resolving at launch — check Namecheap.
 - Untried alternate project layout: git-log style (IDE file explorer is current; bento retrievable from git history).
 - Possible: AI "ask my portfolio" chat, GitHub activity widget, visitor counter, Konami confetti.
+
+## Red Light difficulty and presentation
+
+The active world has larger HUD/dossier type and auto-fitted 3D sign text. Red Light uses a 45-second clock above the doll, randomized green/red durations and forgiving turn windows, and manual stopping. Only terminal states force a stop. Eliminations show two guard rifle shots, raised rifles and recoil, travelling bullets/tracers, brief impact blood particles, opt-in synthesized gunfire, and a collapse. Pause and hidden tabs freeze this sequence; retries reset it. Reduced-motion preferences suppress shot flashes, bullets/tracers, and blood particles. Regression tests verify continued motion during the turn, creeping detection, reproducible seeded schedules, timeout, and wins with 350ms manual reactions.

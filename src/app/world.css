@@ -67,7 +67,7 @@
   color: #e66d93;
 }
 .world-brand strong {
-  font-size: 11px;
+  font-size: 14px;
   letter-spacing: 2px;
   margin-top: 5px;
 }
@@ -82,11 +82,11 @@
   gap: 4px;
 }
 .world-location small {
-  font-size: 9px;
+  font-size: 12px;
   letter-spacing: 2px;
 }
 .world-location span {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 650;
 }
 .world-hud-header nav {
@@ -100,12 +100,12 @@
   background: #193c35ed;
   padding: 12px 17px;
   border-radius: 3px;
-  font-size: 12px;
+  font-size: 15px;
   color: #f9eeda;
 }
 .world-experience kbd {
   font-family: var(--font-geist-mono), monospace;
-  font-size: 10px;
+  font-size: 13px;
   border: 1px solid currentColor;
   border-radius: 3px;
   padding: 3px 5px;
@@ -127,7 +127,7 @@
 }
 .world-kicker {
   font-family: var(--font-geist-mono), monospace;
-  font-size: 10px !important;
+  font-size: 13px !important;
   letter-spacing: 1.7px;
   color: #be5476;
   line-height: 1.7;
@@ -136,18 +136,18 @@
   color: #f29ab8;
 }
 .world-objective h1 {
-  font-size: 19px;
+  font-size: 22px;
   font-weight: 600;
   margin: 9px 0;
 }
 .world-objective p {
-  font-size: 12px;
+  font-size: 15px;
   color: #c6d3c4;
   line-height: 1.65;
   margin: 0 0 16px;
 }
 .world-objective small {
-  font-size: 9px;
+  font-size: 12px;
   letter-spacing: 1.5px;
   color: #acc7b1;
 }
@@ -168,7 +168,7 @@
   height: 145px;
 }
 .world-map-button > span {
-  font-size: 8px;
+  font-size: 11px;
   letter-spacing: 2px;
 }
 .world-controls-legend {
@@ -185,7 +185,7 @@
   pointer-events: none;
 }
 .world-controls-legend span {
-  font-size: 10px;
+  font-size: 13px;
   color: #ecebd5;
 }
 .world-controls-legend kbd {
@@ -205,7 +205,7 @@
   gap: 18px;
   box-shadow: 0 7px 25px #1d493536;
   border-radius: 3px;
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -241,7 +241,7 @@
   padding-bottom: 16px;
 }
 .world-dialog-top > span {
-  font-size: 10px;
+  font-size: 13px;
   letter-spacing: 2px;
   color: #566c5d;
 }
@@ -249,7 +249,7 @@
   background: transparent;
   border: 0;
   color: #345e50;
-  font-size: 12px;
+  font-size: 15px;
 }
 .world-dialog h2 {
   font-size: clamp(30px, 4vw, 46px);
@@ -259,7 +259,7 @@
   margin: 13px 0 22px;
 }
 .world-dialog p {
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.8;
   color: #516258;
   margin: 15px 0;
@@ -280,7 +280,7 @@
   color: #fff5e6 !important;
   border: 0;
   border-radius: 3px;
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 600;
   box-shadow: 0 4px 0 #922647;
   margin: 10px 0 5px;
@@ -294,7 +294,7 @@
   padding: 0 8px 4px;
 }
 .world-invitation .world-kicker {
-  font-size: 9px !important;
+  font-size: 12px !important;
 }
 .world-invite-card {
   width: 245px;
@@ -326,7 +326,7 @@
   line-height: 1.15;
 }
 .world-invite-card > small {
-  font-size: 6px;
+  font-size: 10px;
   letter-spacing: 2px;
   margin-top: 10px;
 }
@@ -338,7 +338,7 @@
   margin: 26px 0 20px;
 }
 .world-invitation > p {
-  font-size: 13px;
+  font-size: 16px;
 }
 .world-invite-options {
   display: flex;
@@ -352,14 +352,14 @@
   border: 0;
   background: transparent;
   color: #6f775a;
-  font-size: 11px;
+  font-size: 14px;
   padding: 10px;
 }
 .world-invite-options a {
-  font-size: 11px;
+  font-size: 14px;
 }
 .world-invitation > small {
-  font-size: 9px;
+  font-size: 12px;
   line-height: 1.9;
   letter-spacing: 0.6px;
   color: #81907b;
@@ -398,18 +398,18 @@
   color: #bd3e67;
 }
 .world-destinations b {
-  font-size: 10px;
+  font-size: 13px;
   color: #bd3e67;
   font-family: monospace;
 }
 .world-destinations strong {
   display: block;
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 600;
 }
 .world-destinations small {
   display: block;
-  font-size: 10px;
+  font-size: 13px;
   color: #737c65;
   margin-top: 4px;
 }
@@ -422,7 +422,7 @@
 }
 .world-record small,
 .world-record summary > span {
-  font-size: 9px;
+  font-size: 12px;
   color: #b64c6d;
   letter-spacing: 1px;
 }
@@ -442,7 +442,7 @@
   font-size: 22px;
 }
 .world-record p {
-  font-size: 13px;
+  font-size: 16px;
   margin: 10px 0;
 }
 .world-record ul {
@@ -450,16 +450,16 @@
   list-style: disc;
 }
 .world-record li {
-  font-size: 12px;
+  font-size: 15px;
   line-height: 1.85;
   color: #4a6151;
   margin: 8px 0;
 }
 .world-record a {
-  font-size: 12px;
+  font-size: 15px;
 }
 .world-record .world-stack {
-  font-size: 10px;
+  font-size: 13px;
   color: #9a5167;
   line-height: 1.8;
 }
@@ -480,7 +480,7 @@
 .world-chips span {
   padding: 7px 10px;
   border: 1px solid #476d542b;
-  font-size: 11px;
+  font-size: 14px;
   background: #e8e8d7;
   border-radius: 3px;
 }
@@ -495,7 +495,7 @@
 .world-player-number span {
   display: inline-block;
   max-width: 110px;
-  font-size: 12px;
+  font-size: 15px;
   letter-spacing: 2px;
   margin-left: 23px;
   line-height: 1.8;
@@ -514,7 +514,7 @@
 }
 .world-facts span {
   display: block;
-  font-size: 10px;
+  font-size: 13px;
   margin-top: 6px;
   color: #7b886e;
 }
@@ -530,11 +530,11 @@
 }
 .world-briefing li {
   padding: 9px 0 9px 10px;
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.7;
 }
 .world-help {
-  font-size: 11px !important;
+  font-size: 14px !important;
   color: #849074 !important;
   margin-top: 25px !important;
 }
@@ -551,7 +551,7 @@
   background: #e4e7d6;
   border: 1px solid #3e6b432b;
   text-align: left;
-  font-size: 12px;
+  font-size: 15px;
   color: #3a5b45;
   border-radius: 3px;
 }
@@ -578,25 +578,25 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 10px;
+  font-size: 13px;
   color: #b9c8b0;
   gap: 15px;
 }
 .world-trial-hud button:not(.world-primary) {
   background: transparent;
   border: 0;
-  font-size: 9px;
+  font-size: 12px;
   color: #e5c4c4;
 }
 .world-trial-hud > strong {
   display: block;
-  font-size: 24px;
+  font-size: 28px;
   letter-spacing: -0.5px;
   margin: 17px 0 10px;
   color: #eaf1d4;
 }
 .world-trial-hud > p {
-  font-size: 12px;
+  font-size: 15px;
   line-height: 1.6;
   color: #c0d1b8;
   min-height: 38px;
@@ -609,7 +609,7 @@
   margin: 19px 0 10px;
 }
 .world-trial-hud > small {
-  font-size: 9px;
+  font-size: 12px;
   letter-spacing: 1px;
   color: #a9c8af;
 }
@@ -631,7 +631,7 @@
   display: none;
 }
 .world-dialog > small {
-  font-size: 10px;
+  font-size: 13px;
   color: #65745f;
 }
 @media (pointer: coarse) {
@@ -679,7 +679,7 @@
     background: #183e36bd;
     border: 1px solid #fff7;
     color: #eee9d1;
-    font-size: 12px;
+    font-size: 15px;
     touch-action: none;
   }
   .world-interact {
@@ -687,7 +687,7 @@
     max-width: calc(100% - 260px);
     white-space: normal;
     padding: 10px 15px;
-    font-size: 11px;
+    font-size: 14px;
   }
   .world-interact kbd {
     display: none;
@@ -704,11 +704,11 @@
     padding: 9px 12px;
   }
   .world-brand > span {
-    font-size: 12px;
+    font-size: 15px;
     letter-spacing: 5px;
   }
   .world-brand strong {
-    font-size: 8px;
+    font-size: 11px;
   }
   .world-location {
     display: none;
@@ -718,7 +718,7 @@
   }
   .world-hud-header button {
     padding: 10px;
-    font-size: 10px;
+    font-size: 13px;
   }
   .world-hud-header kbd {
     display: none;
@@ -733,14 +733,14 @@
     font-size: 16px;
   }
   .world-objective p {
-    font-size: 11px;
+    font-size: 14px;
     margin-bottom: 10px;
   }
   .world-objective .world-kicker {
-    font-size: 8px !important;
+    font-size: 11px !important;
   }
   .world-objective small {
-    font-size: 8px;
+    font-size: 11px;
   }
   .world-dialog {
     width: calc(100% - 24px);
@@ -751,7 +751,7 @@
     margin-bottom: 22px;
   }
   .world-dialog-top > span {
-    font-size: 8px;
+    font-size: 11px;
   }
   .world-invite-card {
     width: 195px;
@@ -765,7 +765,7 @@
     font-size: 48px;
   }
   .world-invitation > p {
-    font-size: 12px;
+    font-size: 15px;
   }
   .world-invite-options {
     gap: 10px;
@@ -790,10 +790,10 @@
     gap: 12px;
   }
   .world-facts strong {
-    font-size: 13px;
+    font-size: 16px;
   }
   .world-facts span {
-    font-size: 9px;
+    font-size: 12px;
   }
   .world-trial-hud {
     left: 15px;
@@ -802,11 +802,11 @@
     padding: 13px 16px;
   }
   .world-trial-hud > strong {
-    font-size: 20px;
+    font-size: 24px;
     margin: 12px 0 8px;
   }
   .world-trial-hud > p {
-    font-size: 11px;
+    font-size: 14px;
     min-height: 0;
   }
   .world-trial-hud progress {
@@ -817,7 +817,7 @@
   }
   .world-controls-legend {
     gap: 8px;
-    font-size: 9px;
+    font-size: 12px;
     padding: 10px;
     bottom: 15px;
   }
@@ -826,7 +826,7 @@
   }
   .world-interact {
     bottom: 80px;
-    font-size: 11px;
+    font-size: 14px;
     padding: 13px;
     gap: 10px;
   }
@@ -834,7 +834,7 @@
     gap: 9px;
   }
   .world-record summary h3 {
-    font-size: 19px;
+    font-size: 22px;
   }
 }
 @media (max-width: 700px) and (pointer: coarse) {
@@ -891,4 +891,86 @@
 .world-camera-buttons button {
   flex: 1;
   text-align: center;
+}
+
+/* Readable type without letting the mobile HUD cover the playfield. */
+.world-dialog {
+  width: min(900px, calc(100% - 40px));
+}
+.world-trial-hud {
+  width: 350px;
+}
+.world-controls-legend {
+  gap: 14px;
+}
+.world-dialog p,
+.world-record p,
+.world-record li {
+  line-height: 1.75;
+}
+.world-invitation > small {
+  line-height: 1.8;
+}
+@media (max-width: 700px) {
+  .world-brand {
+    padding: 9px 8px;
+  }
+  .world-brand strong {
+    font-size: 11px;
+    letter-spacing: 1px;
+  }
+  .world-hud-header {
+    gap: 8px;
+  }
+  .world-hud-header nav {
+    gap: 4px;
+  }
+  .world-hud-header button {
+    padding: 10px 7px;
+  }
+  .world-trial-hud {
+    width: min(290px, calc(100% - 30px));
+    padding: 12px 15px;
+  }
+  .world-trial-hud > div {
+    font-size: 12px;
+    gap: 6px;
+  }
+  .world-trial-hud > strong {
+    font-size: 23px;
+    margin: 10px 0 6px;
+  }
+  .world-trial-hud > p {
+    font-size: 14px;
+    line-height: 1.45;
+  }
+  .world-trial-hud > small {
+    font-size: 12px;
+    letter-spacing: 0.3px;
+  }
+  .world-controls-legend {
+    max-width: calc(100% - 24px);
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .world-dialog {
+    width: calc(100% - 24px);
+  }
+  .world-settings label {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+}
+
+/* Keep the doll and its countdown visible above the mobile game panel. */
+@media (max-width: 640px) {
+  .world-trial-hud.game-red-light {
+    top: auto;
+    bottom: 145px;
+    width: calc(100% - 30px);
+  }
+  .world-trial-hud.game-red-light ~ .world-map-button {
+    display: none;
+  }
 }

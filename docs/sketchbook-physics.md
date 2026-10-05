@@ -15,6 +15,6 @@ Sketchbook is MIT licensed, copyright (c) 2020 swift502. The complete notice is 
 
 This is an incremental controller adaptation, not an import of Sketchbook’s complete world, bundled Cannon engine, old Three.js version, vehicles, or animations. No Sketchbook repository files are modified. Existing portfolio content, collision geometry, camera obstruction handling, and optional mini-games remain in place.
 
-Red Light keeps its explicit warning brake, which clears spring acceleration as well as velocity. Teleports and retries reset the physics accumulator, cached body, movement springs, and turning spring. The rotating carousel stops with the music and menus; the player can walk relative to the platform while it rotates.
+Red Light no longer applies its former warning brake: players must release input and let the motor decelerate during the doll’s turn. Terminal game states still clear velocity and spring acceleration. Teleports and retries reset the physics accumulator, cached body, movement springs, and turning spring. The rotating carousel stops with the music and menus; the player can walk relative to the platform while it rotates.
 
 Regression tests cover render-rate independence, bounded catchup, spring settling, momentum in air, slope speed, platform carry, inherited jump momentum, locomotion transitions, and existing collision/game rules.

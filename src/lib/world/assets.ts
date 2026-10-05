@@ -117,7 +117,9 @@ export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
       ctx.fillStyle = fg;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.font = `bold ${value.length <= 4 ? 200 : value.length > 21 ? 43 : 64}px sans-serif`;
+      ctx.font = "bold 180px sans-serif";
+      const measured = ctx.measureText(value).width;
+      ctx.font = `bold ${Math.min(value.length <= 4 ? 200 : 180, (180 * 920) / Math.max(1, measured))}px sans-serif`;
       ctx.fillText(value, 512, 133);
       texture.needsUpdate = true;
     };
@@ -198,6 +200,7 @@ export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
     }
     return {
       group,
+      arms,
       animate(
         time: number,
         moving: boolean,
@@ -364,7 +367,7 @@ export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
   box(root, -28, 2.8, -39, 20, 5.6, 0.4, palette.blue, true);
   for (const x of [-34.6, -21.4])
     box(root, x, 2.3, -7, 7, 4.6, 0.4, palette.pink, true);
-  sign(root, "RED LIGHT, GREEN LIGHT", -28, 4.0, -6.7, 7, 1);
+  sign(root, "RED LIGHT, GREEN LIGHT", -36, 4.0, -6.7, 6, 1);
   for (let i = 0; i < 6; i++)
     box(root, -35.5 + i * 3, 0.061, -23, 0.035, 0.012, 27, palette.cream);
   box(root, -28, 0.069, -34, 18, 0.014, 0.13, palette.rose);
@@ -413,13 +416,205 @@ export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
     dynamic,
     "WAITING FOR PLAYERS",
     -28,
-    7.15,
-    -38.6,
+    8,
+    -36.5,
     11,
     1.1,
   );
-  character(root, -36, 0, true).group.position.z = -36;
-  character(root, -20, 0, true).group.position.z = -36;
+  const redTimer = sign(
+    dynamic,
+    "00:45",
+    -28,
+    6.3,
+    -36.5,
+    5.5,
+    1.25,
+    "#151d22",
+    "#fff2cd",
+  );
+  // Two physical signal heads remain readable on either side of the doll.
+  const trafficLights = [-31, -25].map((x) => {
+    cylinder(dynamic, x, 1.7, -36, 0.09, 3.4, palette.black);
+    box(dynamic, x, 4.25, -36, 0.95, 2.25, 0.5, palette.black);
+    const lamps = [0xff3535, 0x50ff83].map((color, index) => {
+      const material = new THREE.MeshBasicMaterial({
+        color,
+        toneMapped: false,
+      });
+      const lamp = sphere(dynamic, x, 4.8 - index * 1.1, -35.7, 0.35, material);
+      lamp.scale.z = 0.4;
+      return material;
+    });
+    return lamps;
+  });
+  function updateTrafficLights(stop: boolean) {
+    for (const lamps of trafficLights) {
+      lamps.forEach((lamp, index) => {
+        const lit = index === (stop ? 0 : 1);
+        lamp.color.setHex(lit ? (index === 0 ? 0xff3535 : 0x50ff83) : 0x25282a);
+      });
+    }
+  }
+  const armedGuards = [-36, -20].map((x) => {
+    const guard = character(dynamic, x, -36, true);
+    const rifle = new THREE.Group();
+    rifle.position.set(0.15, 1.18, 0.2);
+    guard.group.add(rifle);
+    box(rifle, 0, 0, 0.14, 0.17, 0.16, 0.55, palette.black);
+    box(rifle, 0, -0.02, -0.23, 0.13, 0.2, 0.27, palette.dark);
+    box(rifle, 0, -0.18, 0.1, 0.09, 0.26, 0.13, palette.black).rotation.x =
+      -0.25;
+    const barrel = cylinder(rifle, 0, 0.025, 0.64, 0.035, 0.58, palette.black);
+    barrel.rotation.x = Math.PI / 2;
+    box(rifle, 0, 0.12, 0.34, 0.055, 0.1, 0.05, palette.black);
+    const flash = new THREE.Mesh(
+      new THREE.SphereGeometry(0.14, 8, 6),
+      new THREE.MeshBasicMaterial({ color: 0xffdd82 }),
+    );
+    flash.scale.set(0.7, 0.7, 1.8);
+    flash.position.set(0, 0.025, 0.99);
+    rifle.add(flash);
+    flash.visible = false;
+    const muzzle = new THREE.Object3D();
+    muzzle.position.copy(flash.position);
+    rifle.add(muzzle);
+    const lineGeometry = new THREE.BufferGeometry();
+    lineGeometry.setAttribute(
+      "position",
+      new THREE.BufferAttribute(new Float32Array(6), 3),
+    );
+    const tracer = new THREE.Line(
+      lineGeometry,
+      new THREE.LineBasicMaterial({
+        color: 0xffe4b0,
+        transparent: true,
+        opacity: 0.85,
+      }),
+    );
+    tracer.frustumCulled = false;
+    tracer.visible = false;
+    dynamic.add(tracer);
+    const bullet = new THREE.Mesh(
+      new THREE.SphereGeometry(0.07, 8, 6),
+      new THREE.MeshBasicMaterial({ color: 0xffdf8a }),
+    );
+    bullet.visible = false;
+    dynamic.add(bullet);
+    const bloodMaterial = new THREE.MeshBasicMaterial({
+      color: 0x9c1525,
+      transparent: true,
+    });
+    const bloodGeometry = new THREE.SphereGeometry(0.055, 6, 4);
+    const blood = Array.from({ length: 14 }, (_, j) => {
+      const mesh = new THREE.Mesh(bloodGeometry, bloodMaterial);
+      mesh.visible = false;
+      dynamic.add(mesh);
+      const angle = j * 2.39996;
+      return {
+        mesh,
+        velocity: new THREE.Vector3(
+          Math.cos(angle) * (0.5 + (j % 3) * 0.2),
+          0.7 + (j % 4) * 0.25,
+          Math.sin(angle) * 0.7,
+        ),
+      };
+    });
+    return {
+      guard: guard.group,
+      arms: guard.arms,
+      rifle,
+      flash,
+      muzzle,
+      tracer,
+      bullet,
+      blood,
+      bloodMaterial,
+      origin: new THREE.Vector3(),
+      impact: new THREE.Vector3(),
+      previousAge: -1,
+    };
+  });
+  function updateElimination(
+    target: THREE.Vector3,
+    time: number,
+    reduced: boolean,
+  ) {
+    for (let i = 0; i < armedGuards.length; i++) {
+      const shot = armedGuards[i];
+      const {
+        guard,
+        arms,
+        rifle,
+        flash,
+        muzzle,
+        tracer,
+        bullet,
+        blood,
+        bloodMaterial,
+        origin,
+        impact,
+      } = shot;
+      const age = time - [0.16, 0.62][i];
+      const firing = time >= 0 && age >= 0 && age < 0.18;
+      const raise = time < 0 ? 0 : THREE.MathUtils.smoothstep(time, 0, 0.16);
+      guard.rotation.y =
+        time >= 0
+          ? Math.atan2(target.x - guard.position.x, target.z - guard.position.z)
+          : 0;
+      arms.forEach((arm, j) => {
+        arm.rotation.x = -raise * 1.35;
+        arm.rotation.z = raise * (j === 0 ? -0.35 : 0.35);
+      });
+      rifle.rotation.x =
+        (1 - raise) * 0.45 -
+        (firing ? Math.sin((age / 0.18) * Math.PI) * 0.12 : 0);
+      rifle.position.z =
+        0.2 - (firing ? Math.sin((age / 0.18) * Math.PI) * 0.09 : 0);
+      if (age >= 0 && shot.previousAge < 0) {
+        guard.updateMatrixWorld(true);
+        muzzle.getWorldPosition(origin);
+        // Aim the second shot lower as the avatar falls.
+        impact.set(target.x, target.y + (i === 0 ? 1 : 0.55), target.z);
+      }
+      flash.visible = firing && age < 0.08 && !reduced;
+      const flight = age >= 0 && age < 0.12 && time >= 0;
+      tracer.visible = bullet.visible = flight && !reduced;
+      if (flight) {
+        const fraction = THREE.MathUtils.clamp(age / 0.12, 0, 1);
+        bullet.position.lerpVectors(origin, impact, fraction);
+        const tail = new THREE.Vector3().lerpVectors(
+          origin,
+          impact,
+          Math.max(0, fraction - 0.22),
+        );
+        const positions = tracer.geometry.getAttribute(
+          "position",
+        ) as THREE.BufferAttribute;
+        positions.setXYZ(0, tail.x, tail.y, tail.z);
+        positions.setXYZ(
+          1,
+          bullet.position.x,
+          bullet.position.y,
+          bullet.position.z,
+        );
+        positions.needsUpdate = true;
+      }
+      const hitAge = age - 0.12;
+      bloodMaterial.opacity = Math.max(0, 1 - hitAge / 0.55);
+      for (const { mesh, velocity } of blood) {
+        mesh.visible = time >= 0 && hitAge >= 0 && hitAge < 0.55 && !reduced;
+        if (mesh.visible) {
+          mesh.position.copy(impact).addScaledVector(velocity, hitAge);
+          mesh.position.y = Math.max(
+            target.y + 0.05,
+            mesh.position.y - 3 * hitAge * hitAge,
+          );
+          mesh.scale.setScalar(1 - hitAge * 0.7);
+        }
+      }
+      shot.previousAge = age;
+    }
+  }
   // Mingle courtyard: four doors with physical numbered destinations.
   cylinder(root, -28, 0.04, 15, 10.4, 0.08, palette.pink);
   cylinder(root, -28, 0.09, 15, 6, 0.08, palette.yellow);
@@ -743,6 +938,9 @@ export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
     updateMovingCameraObstacles,
     dollHead,
     redSignal,
+    redTimer,
+    updateElimination,
+    updateTrafficLights,
     carousel,
     rope,
     ropeRig,

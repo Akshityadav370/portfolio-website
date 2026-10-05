@@ -460,6 +460,26 @@ export function stepMotion(
         : "idle";
   return { body: updated, motion: next };
 }
+export const RED_LIGHT_TIME_LIMIT = 45;
+/** Seeded schedules keep tests reproducible; the browser supplies a fresh seed per attempt. */
+export function redLightTiming(
+  seed: number,
+  phase: "green" | "warning" | "red",
+) {
+  let rng = seed >>> 0 || 0x370;
+  rng ^= rng << 13;
+  rng ^= rng >>> 17;
+  rng ^= rng << 5;
+  rng >>>= 0;
+  const random = rng / 4294967296;
+  const phaseDuration =
+    phase === "green"
+      ? 1 + random
+      : phase === "warning"
+        ? 0.85 + random * 0.2
+        : 1 + random * 1.3;
+  return { rng, phaseDuration };
+}
 export type SpatialTrial = {
   kind: GameId;
   status: "playing" | "won" | "lost";
@@ -471,10 +491,13 @@ export type SpatialTrial = {
   progress: number;
   nextCrossing: number;
   message: string;
+  rng: number;
+  phaseDuration: number;
 };
-export function startSpatialTrial(kind: GameId): SpatialTrial {
+export function startSpatialTrial(kind: GameId, seed = 0x370): SpatialTrial {
   return {
     kind,
+    ...redLightTiming(seed, "green"),
     status: "playing",
     phase:
       kind === "red-light" ? "green" : kind === "mingle" ? "spinning" : "rope",
@@ -486,7 +509,7 @@ export function startSpatialTrial(kind: GameId): SpatialTrial {
     nextCrossing: 3.6,
     message:
       kind === "red-light"
-        ? "Walk to the finish on green. Release movement when she turns."
+        ? "45 seconds. Move on green. Stop when the red lamp lights up."
         : kind === "mingle"
           ? "Stay on the carousel. When the music stops, walk into the numbered room."
           : "Follow the glowing marker. Jump just before the rope reaches you.",
@@ -508,7 +531,7 @@ export function stepSpatialTrial(
       elapsed: state.elapsed + dt,
       phaseTime: state.phaseTime + dt,
     };
-  if (next.elapsed > 65)
+  if (next.elapsed >= (state.kind === "red-light" ? RED_LIGHT_TIME_LIMIT : 65))
     return {
       ...next,
       status: "lost",
@@ -516,7 +539,7 @@ export function stepSpatialTrial(
     };
   if (state.kind === "red-light") {
     next.progress = clamp((-11 - body.z) / 23, 0, 1);
-    if (state.phase === "red" && moved > 0.005)
+    if (state.phase === "red" && moved > 0.0001)
       return {
         ...next,
         status: "lost",
@@ -528,31 +551,27 @@ export function stepSpatialTrial(
         status: "won",
         message: "Across the line. Well played, 370.",
       };
-    if (
-      state.phase === "green" &&
-      next.phaseTime > 3.4 + (state.round % 2) * 0.5
-    )
+    if (state.phaseTime + dt >= state.phaseDuration) {
+      const phase =
+        state.phase === "green"
+          ? "warning"
+          : state.phase === "warning"
+            ? "red"
+            : "green";
       return {
         ...next,
-        phase: "warning",
+        ...redLightTiming(state.rng, phase),
+        phase,
         phaseTime: 0,
-        message: "She’s turning. Stop now!",
+        round: state.round + (phase === "green" ? 1 : 0),
+        message:
+          phase === "warning"
+            ? "Red light! Stop while she turns toward you."
+            : phase === "red"
+              ? "She is watching. Hold still until the green light."
+              : "Green light. Move! Her next turn is unpredictable.",
       };
-    if (state.phase === "warning" && next.phaseTime > 0.8)
-      return {
-        ...next,
-        phase: "red",
-        phaseTime: 0,
-        message: "Red light. Don’t move.",
-      };
-    if (state.phase === "red" && next.phaseTime > 2)
-      return {
-        ...next,
-        phase: "green",
-        phaseTime: 0,
-        round: state.round + 1,
-        message: "Green light. Go!",
-      };
+    }
   } else if (state.kind === "mingle") {
     if (state.phase === "spinning" && next.phaseTime > 4.5)
       return {

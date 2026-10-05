@@ -23,6 +23,8 @@ const {
   advancePhysics,
   surfaceVelocity,
   springStep,
+  redLightTiming,
+  RED_LIGHT_TIME_LIMIT,
 } = await import(
   `data:text/javascript;base64,${Buffer.from(outputText).toString("base64")}`
 );
@@ -216,7 +218,7 @@ test("jump pressed just before landing is buffered", () => {
   );
   assert(r.body.vy > 5);
 });
-test("red warning brake settles momentum before the red phase", () => {
+test("finished-round brake stops locomotion", () => {
   const r = stepMotion(
     body(-28, -20),
     { ...createMotion(), vx: 3, vz: -4 },
@@ -360,4 +362,94 @@ test("Sketchbook spring adaptation settles without oscillating around a standing
   assert(Math.abs(p - 4.5) < 0.001);
   assert(Math.abs(v) < 0.001);
   assert.deepEqual(surfaceVelocity(body(), undefined), { x: 0, z: 0 });
+});
+
+test("red-light schedules vary by seed and remain within bounded reaction windows", () => {
+  const schedule = (seed) => {
+    let s = startSpatialTrial("red-light", seed);
+    const times = [];
+    for (let i = 0; i < 9; i++) {
+      times.push(s.phaseDuration);
+      s = stepSpatialTrial(
+        { ...s, phaseTime: s.phaseDuration },
+        0.01,
+        body(-28, -11),
+        0,
+      );
+    }
+    return times;
+  };
+  assert.deepEqual(schedule(123), schedule(123));
+  assert.notDeepEqual(schedule(123), schedule(456));
+  for (let seed = 1; seed < 100; seed++) {
+    const timing = redLightTiming(seed, "warning");
+    assert(timing.phaseDuration >= 0.85 && timing.phaseDuration <= 1.05);
+  }
+});
+test("holding forward during the turn continues movement and causes elimination on red", () => {
+  let p = body(-28, -11),
+    m = { ...createMotion(), vz: -4.5 };
+  let s = {
+    ...startSpatialTrial("red-light", 7),
+    phase: "warning",
+    phaseDuration: 0.4,
+  };
+  for (let i = 0; i < 80 && s.status === "playing"; i++) {
+    const old = p;
+    const r = stepMotion(
+      p,
+      m,
+      { x: 0, z: -1, speed: 4.5, jump: false, brake: s.status !== "playing" },
+      1 / 120,
+      [],
+    );
+    p = r.body;
+    m = r.motion;
+    s = stepSpatialTrial(s, 1 / 120, p, Math.hypot(p.x - old.x, p.z - old.z));
+  }
+  assert(p.z < -12.5, "turning must not auto-stop the player");
+  assert.equal(s.status, "lost");
+});
+test("a 350ms manual reaction can win several randomized schedules", () => {
+  for (const seed of [1, 2, 370, 0xdeadbeef]) {
+    let p = body(-28, -11),
+      m = createMotion(),
+      s = startSpatialTrial("red-light", seed);
+    for (
+      let i = 0;
+      i < RED_LIGHT_TIME_LIMIT * 120 + 5 && s.status === "playing";
+      i++
+    ) {
+      const moving =
+        s.phase === "green" || (s.phase === "warning" && s.phaseTime < 0.35);
+      const old = p;
+      const r = stepMotion(
+        p,
+        m,
+        { x: 0, z: moving ? -1 : 0, speed: 4.5, jump: false },
+        1 / 120,
+        [],
+      );
+      p = r.body;
+      m = r.motion;
+      s = stepSpatialTrial(s, 1 / 120, p, Math.hypot(p.x - old.x, p.z - old.z));
+    }
+    assert.equal(
+      s.status,
+      "won",
+      `reactive player should be able to win seed ${seed}: ${s.message}`,
+    );
+  }
+});
+test("doll deadline is 45 seconds and red detects even slow creeping", () => {
+  let s = startSpatialTrial("red-light", 3);
+  assert.equal(
+    stepSpatialTrial({ ...s, elapsed: 44.99 }, 0.02, body(-28, -11), 0).status,
+    "lost",
+  );
+  assert.equal(
+    stepSpatialTrial({ ...s, phase: "red" }, 1 / 120, body(-28, -11), 0.001)
+      .status,
+    "lost",
+  );
 });

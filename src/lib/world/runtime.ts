@@ -21,6 +21,7 @@ import {
   POIS,
   ropeZ,
   startSpatialTrial,
+  RED_LIGHT_TIME_LIMIT,
   stepSpatialTrial,
   ZONES,
   type Body,
@@ -36,6 +37,7 @@ export type Snapshot = {
   nearby: (typeof POIS)[number] | null;
   discovered: ZoneId[];
   trial: SpatialTrial | null;
+  elimination: number;
 };
 export function createWorld(
   host: HTMLDivElement,
@@ -63,6 +65,8 @@ export function createWorld(
     lastY = 0;
   let body: Body = { x: 0, z: 7, y: 0, vy: 0, grounded: true },
     trial: SpatialTrial | null = null;
+  let elimination = -1,
+    lastTimer = "";
   let motion = createMotion();
   let accumulator = 0,
     previousBody = { ...body },
@@ -173,6 +177,7 @@ export function createWorld(
     keys.clear();
     joystick = { x: 0, y: 0 };
     trial = null;
+    elimination = -1;
     syncSound();
     publish();
   }
@@ -246,7 +251,7 @@ export function createWorld(
   };
   function recenter() {
     wantedYaw = world.player.group.rotation.y - Math.PI;
-    wantedPitch = 0.39;
+    wantedPitch = trial?.kind === "red-light" ? 0.2 : 0.39;
     chase = { hold: 0.6, moving: 0 };
     renderNeeded = true;
   }
@@ -298,6 +303,7 @@ export function createWorld(
       nearby: nearest,
       discovered: [...discovered],
       trial: trial ? { ...trial } : null,
+      elimination,
     });
   }
   let previous = performance.now(),
@@ -307,6 +313,12 @@ export function createWorld(
   function simulate(dt: number) {
     let moved = 0;
     if (!paused && !hidden) {
+      if (elimination >= 0) {
+        const before = elimination;
+        elimination += dt;
+        for (const at of [0.16, 0.62])
+          if (before < at && elimination >= at) audio.shot();
+      }
       let x =
         Number(keys.has("KeyD") || keys.has("ArrowRight")) -
         Number(keys.has("KeyA") || keys.has("ArrowLeft")) +
@@ -320,7 +332,7 @@ export function createWorld(
         x /= length;
         z /= length;
       }
-      if (trial && (trial.status !== "playing" || trial.phase === "warning")) {
+      if (trial && trial.status !== "playing") {
         x = 0;
         z = 0;
       }
@@ -350,9 +362,7 @@ export function createWorld(
           surface: riding
             ? { x: -28, z: 15, radius: 5.8, speed: 0.6 }
             : undefined,
-          brake:
-            !!trial &&
-            (trial.status !== "playing" || trial.phase === "warning"),
+          brake: !!trial && trial.status !== "playing",
         },
         dt,
         world.obstacles,
@@ -405,12 +415,19 @@ export function createWorld(
       }
       if (trial) {
         const round = trial.round;
+        const previousStatus = trial.status;
         trial = stepSpatialTrial(
           trial,
           dt,
           body,
           moved + Math.abs(body.y - old.y),
         );
+        if (
+          trial.kind === "red-light" &&
+          previousStatus === "playing" &&
+          trial.status === "lost"
+        )
+          elimination = 0;
         if (
           trial.kind === "mingle" &&
           trial.round !== round &&
@@ -446,7 +463,12 @@ export function createWorld(
     if (autoFollowing) {
       yaw = chaseYaw(yaw, motion.vx, motion.vz, dt);
       wantedYaw = yaw;
-      const travelPitch = trial?.kind === "jump-rope" ? 0.48 : 0.36;
+      const travelPitch =
+        trial?.kind === "jump-rope"
+          ? 0.48
+          : trial?.kind === "red-light"
+            ? 0.2
+            : 0.36;
       wantedPitch = damp(wantedPitch, travelPitch, 1.8, dt);
     } else yaw = dampAngle(yaw, wantedYaw, 18, dt);
     pitch = damp(pitch, wantedPitch, 12, dt);
@@ -496,20 +518,48 @@ export function createWorld(
       1 - landing,
       1 + landing * 0.2,
     );
-    const red = trial?.kind === "red-light" ? trial.phase : "green";
-    world.dollHead.rotation.y = THREE.MathUtils.lerp(
-      world.dollHead.rotation.y,
-      red === "green" ? Math.PI : 0,
-      1 - Math.exp(-dt * 7),
+    if (elimination >= 0) {
+      const collapse = THREE.MathUtils.smoothstep(elimination, 0.28, 1.13);
+      world.player.group.rotation.x = 0;
+      world.player.group.rotation.z = (-Math.PI / 2) * collapse;
+      world.player.group.position.y = visualPosition.y + 0.05 + 0.22 * collapse;
+      world.player.group.scale.setScalar(1);
+    }
+    world.updateElimination(visualPosition, elimination, reducedMotion);
+    const red =
+      trial?.kind === "red-light"
+        ? trial.status === "lost"
+          ? "eliminated"
+          : trial.phase
+        : "green";
+    world.updateTrafficLights(
+      red === "warning" || red === "red" || red === "eliminated",
     );
+    world.dollHead.rotation.y =
+      red === "warning" && trial
+        ? Math.PI * (1 - clamp(trial.phaseTime / trial.phaseDuration, 0, 1))
+        : red === "red" || red === "eliminated"
+          ? 0
+          : damp(world.dollHead.rotation.y, Math.PI, 18, dt);
+    const seconds =
+      trial?.kind === "red-light"
+        ? Math.max(0, Math.ceil(RED_LIGHT_TIME_LIMIT - trial.elapsed))
+        : RED_LIGHT_TIME_LIMIT;
+    const timerText = `00:${String(seconds).padStart(2, "0")}`;
+    if (timerText !== lastTimer) {
+      lastTimer = timerText;
+      world.redTimer.update(timerText);
+    }
     if (signal !== red) {
       signal = red;
       world.redSignal.update(
-        red === "red"
-          ? "RED LIGHT"
-          : red === "warning"
-            ? "STOP · SHE IS TURNING"
-            : "GREEN LIGHT",
+        red === "eliminated"
+          ? "PLAYER ELIMINATED"
+          : red === "red"
+            ? "RED LIGHT"
+            : red === "warning"
+              ? "RED · STOP NOW"
+              : "GREEN LIGHT",
       );
     }
     if (trial?.kind === "jump-rope") {
@@ -625,7 +675,11 @@ export function createWorld(
       if (!value) host.focus({ preventScroll: true });
     },
     startGame(kind: GameId) {
-      trial = startSpatialTrial(kind);
+      elimination = -1;
+      trial = startSpatialTrial(
+        kind,
+        crypto.getRandomValues(new Uint32Array(1))[0],
+      );
       const point =
         kind === "red-light"
           ? { x: -28, z: -11 }
@@ -637,7 +691,8 @@ export function createWorld(
       movementFrame = { yaw, x: 0, z: 0 };
       chase = { hold: 0, moving: 0 };
       leadX = leadZ = 0;
-      wantedPitch = kind === "jump-rope" ? 0.48 : 0.39;
+      wantedPitch =
+        kind === "jump-rope" ? 0.48 : kind === "red-light" ? 0.2 : 0.39;
       motion = createMotion();
       accumulator = 0;
       previousBody = { ...body };
@@ -649,6 +704,7 @@ export function createWorld(
     },
     leaveGame() {
       trial = null;
+      elimination = -1;
       syncSound();
       publish();
     },
