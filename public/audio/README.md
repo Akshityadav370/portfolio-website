@@ -1,3 +1,17 @@
+## Open-world music
+
+The current world uses the three owner-supplied tracks:
+
+| Original | Runtime copy |
+| --- | --- |
+| `src/data/squid_game_red_green.mp3` | `/audio/world/red-light.mp3` |
+| `src/data/mingle_squid_game.mp3` | `/audio/world/mingle.mp3` |
+| `src/data/Jump_Rope_Song_Squid_Game_3-654475-mobiles24.mp3` | `/audio/world/jump-rope.mp3` |
+
+Playback is opt-in. Music pauses with game menus, hidden tabs, and phase changes. Track timing does not determine physics; visible signals remain authoritative. To replace music, replace the runtime files or update `src/lib/world/audio.ts`.
+
+The instructions below describe the preserved `/portfolio` miniature version.
+
 # Music for Player 370
 
 Music is intentionally not bundled yet. The experience currently has original synthesized interaction cues, enabled only after the visitor turns sound on.

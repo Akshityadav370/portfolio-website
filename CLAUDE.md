@@ -2,13 +2,15 @@
 
 # Project context (handoff notes — keep updated as the site evolves)
 
-## Current design — Player 370, October 4, 2026
+## Current design — Player 370 open world, October 5, 2026
 
-The workshop design is saved on `feat/3d-workshop-portfolio` at `703dd5f`. The user asked for a separate branch so the game version can be evaluated independently. The active branch is `feat/player-370-game-portfolio`.
+Active branch: `feat/player-370-open-world`. The saved miniature version is `feat/player-370-game-portfolio` at `2de9ddd`; the workshop is `feat/3d-workshop-portfolio` at `703dd5f`. Do not commit or push without the owner asking.
 
-The current page is a Squid Game-inspired miniature world: a reversible kraft-paper invitation with circle/triangle/square symbols, player dossier, pastel staircase career journey, project control room, three playable mini-games, equipment room with skill evidence, and an exit/contact chapter. It uses `src/app/trials.css` and `src/components/trials/`, with procedural geometry in `src/lib/trials-scene.ts`. Gameplay rules live in `src/lib/trials-engine.ts`, with regression tests in `tests/trials-engine.test.mjs`. Full rounds also have browser verification. The experience is nonviolent, games are optional, and all existing profile claims/links remain in `resume.ts`.
+The root page now mounts a real third-person Three.js world with walking, jumping, camera orbit, collision, touch controls, map/fast travel, and eight connected destinations. Portfolio dossiers open near physical markers. Red Light, Mingle, and Jump Rope operate on the same character’s world position. The original scrolling page is preserved at `/portfolio` as a direct route and WebGL fallback. Portfolio facts remain in `src/data/resume.ts`.
 
-Audio is OFF until a visitor opts in. Only original synthesized cues are bundled. The owner offered to supply permitted music; populate `src/data/trials-audio.ts` with supplied files, attribution, and license links. See `public/audio/README.md`. Do not silently substitute the show's recordings. Sound must never be required for a game.
+`src/components/world/WorldExperience.tsx` owns React UI, `src/app/world.css` its styling, and `src/lib/world/` contains the renderer, geometry, audio, and DOM-independent physics/game rules. `tests/world-rules.test.mjs` tests those rules. Keep the earlier trial modules because `/portfolio` still uses them.
+
+The owner supplied three MP3s in `src/data/` and explicitly requested using them. Runtime copies live in `public/audio/world/`. Music is opt-in and follows game phase/pause state. Local CC0 Kenney scenery models and their license are under `public/models/`; architecture and characters are procedural. Visual game signals work with audio disabled.
 
 ## Saved workshop design — October 2026
 

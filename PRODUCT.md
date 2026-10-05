@@ -21,7 +21,7 @@ Personal portfolio for an active job search targeting **full-stack roles** — n
 
 **Full-stack + AI-native range** is the headline claim: 2.5+ years shipping across web, mobile, backend, and LLM-powered products end to end (React micro-frontends, Spring Boot microservices, real-time apps, RAG/LLM tooling) — range a frontend-only or backend-only competing portfolio couldn't truthfully copy.
 
-This supersedes the historical "speed as proof-of-craft" framing. The current playable miniature-world design leads with full-stack/AI-native range, while engineering quality remains supporting evidence. See the current-design notes in `CLAUDE.md`.
+This supersedes the historical "speed as proof-of-craft" framing. The current playable third-person world design leads with full-stack/AI-native range, while engineering quality remains supporting evidence. See the current-design notes in `CLAUDE.md`.
 
 ## Operating Context
 

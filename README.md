@@ -1,13 +1,14 @@
-# Player 370 — a playable portfolio
+# Player 370 — a third-person portfolio world
 
-A Squid Game-inspired miniature world for Akshit’s full-stack engineering portfolio. Next.js static export, React, Tailwind CSS, and procedural Three.js sets. Portfolio content and links are available without winning a game.
+A walkable Squid Game-inspired compound for Akshit’s engineering portfolio. Built with Next.js static export, React, and Three.js. The same character explores portfolio locations and plays three spatial games. No game must be won to access the portfolio.
 
 ## Design checkpoints
 
-- `feat/3d-workshop-portfolio` at `703dd5f`: the saved graphite/copper workshop design.
-- `feat/player-370-game-portfolio`: the invitation and miniature game version.
+- `feat/3d-workshop-portfolio` at `703dd5f`: graphite/copper workshop.
+- `feat/player-370-game-portfolio` at `2de9ddd`: invitation and miniature game version.
+- `feat/player-370-open-world`: current third-person world.
 
-Switch between the branches with a clean working tree to compare the versions. No production deployment is triggered by local branch switching.
+The previous scrolling experience is also available at `/portfolio`, including when WebGL cannot start.
 
 ## Run locally
 
@@ -16,33 +17,33 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:3000. The existing Geist fonts are fetched by Next.js during development/build and self-hosted in the output.
+Open http://localhost:3000. Next.js fetches the existing Geist fonts during the build.
 
-## The experience
+## Explore and play
 
-- A textured, reversible circle–triangle–square invitation card.
-- A 3D dormitory/staircase set, player dossier, career journey, and project control room.
-- Three optional mini-games: Red Light, Green Light; Mingle; Jump Rope.
-- Skill evidence derived from actual experience and project stacks, achievement proof links, and contact details.
-- Opt-in synthesized sound cues, with configured slots for owner-supplied licensed music.
+WASD/arrows walk, Shift runs, Space jumps, dragging turns the camera, and scrolling adjusts camera distance. Approach a pink marker and press E. M opens a map with fast travel; Escape pauses. Touch devices have a movement joystick and jump button. A light graphics option disables shadows and lowers rendering resolution.
 
-Game input supports touch/pointer and keyboard. The round pauses when the browser loses focus, the tab becomes hidden, or the arena leaves view. Red light includes a visible reaction window. Games are nonviolent and always offer a retry. Each scene loads near the viewport and has a static fallback if WebGL is unavailable. Decorative motion respects reduced-motion preferences; game timing and progress also have text indicators.
+Eight connected places contain the player profile, career staircase, project control room, skill equipment room, three game arenas, and contact portal. Portfolio facts come from `src/data/resume.ts`.
+
+- **Red Light, Green Light:** physically cross the field. A short turning warning precedes red; movement on red ends the round.
+- **Mingle:** walk into the correct numbered room after the carousel stops. Three rounds, ten seconds per choice.
+- **Jump Rope:** move between five bridge checkpoints and jump over the rope on each crossing.
+
+Games pause with menus, window blur, and hidden tabs. Music is off initially and follows game phases after opting in. Owner-supplied tracks from `src/data/` are copied into `public/audio/world/` for static hosting; original files are preserved. Scenery GLBs are from Kenney’s CC0 Nature Kit; see `public/models/ATTRIBUTION.md` and the included license. Characters and architecture are generated in code.
 
 ## Editing
 
 | File | Purpose |
 | --- | --- |
-| `src/data/resume.ts` | Authoritative profile, experience, projects, skills, and proof links |
-| `src/app/page.tsx` | Server-rendered portfolio content and story sections |
-| `src/app/trials.css` | Active design and responsive layouts |
-| `src/components/trials/` | Invitation, navigation, audio, project selector, and game controls |
-| `src/lib/trials-scene.ts` | Procedural miniature geometry, lighting, rendering, and cleanup |
-| `src/lib/trials-engine.ts` | Deterministic, DOM-independent game rules |
-| `src/data/trials-audio.ts` | Optional music paths, attribution, and license links |
-| `public/audio/README.md` | Audio asset handoff instructions |
-| `tests/trials-engine.test.mjs` | Win/loss, reaction-window, timing, and pause regression tests |
-
-Legacy IDE and workshop components remain for reference. Only the new trial page is mounted, apart from the reused skill evidence and copy-email controls.
+| `src/data/resume.ts` | Authoritative portfolio content |
+| `src/components/world/WorldExperience.tsx` | Invitation, HUD, map, touch input, dossiers, and game briefings |
+| `src/app/world.css` | World interface and responsive layouts |
+| `src/lib/world/runtime.ts` | Third-person camera, input, rendering, lifecycle, and gameplay integration |
+| `src/lib/world/assets.ts` | Architecture, characters, imported scenery, collision geometry |
+| `src/lib/world/rules.ts` | Layout, movement, collision, and spatial trial rules |
+| `src/lib/world/audio.ts` | Opt-in playback tied to game state |
+| `tests/world-rules.test.mjs` | Collision, traversal, jumping, and physical win/loss checks |
+| `src/app/portfolio/page.tsx` | Preserved scrolling portfolio |
 
 ## Verify and build
 
