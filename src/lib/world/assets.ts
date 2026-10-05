@@ -198,12 +198,35 @@ export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
     }
     return {
       group,
-      animate(time: number, moving: boolean, airborne: boolean) {
-        const step = moving ? Math.sin(time * 11) * 0.65 : 0;
-        legs[0].rotation.x = airborne ? -0.5 : step;
-        legs[1].rotation.x = airborne ? 0.35 : -step;
-        arms[0].rotation.x = -step * 0.7;
-        arms[1].rotation.x = step * 0.7;
+      animate(
+        time: number,
+        moving: boolean,
+        airborne: boolean,
+        pose?: { speed: number; vertical: number; landing: number; dt: number },
+      ) {
+        const speed = pose?.speed ?? 4.5;
+        const step = moving
+          ? Math.sin(time * 11) * Math.min(0.82, 0.2 + speed * 0.1)
+          : 0;
+        const falling = airborne && (pose?.vertical ?? 0) < 0;
+        const crouch = pose?.landing ? Math.min(0.4, pose.landing * 2) : 0;
+        const blend = pose ? 1 - Math.exp(-pose.dt * 18) : 1;
+        const angles = [
+          airborne ? (falling ? 0.25 : -0.65) : step + crouch,
+          airborne ? (falling ? 0.35 : 0.45) : -step + crouch,
+        ];
+        for (let i = 0; i < 2; i++) {
+          legs[i].rotation.x += (angles[i] - legs[i].rotation.x) * blend;
+          const arm = airborne
+            ? falling
+              ? -0.9
+              : -0.5
+            : (i === 0 ? -step : step) * 0.75;
+          arms[i].rotation.x += (arm - arms[i].rotation.x) * blend;
+          arms[i].rotation.z +=
+            ((falling ? (i === 0 ? -0.35 : 0.35) : 0) - arms[i].rotation.z) *
+            blend;
+        }
       },
     };
   }

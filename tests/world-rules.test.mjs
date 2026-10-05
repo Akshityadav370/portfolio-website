@@ -20,6 +20,9 @@ const {
   ropeZ,
   createMotion,
   stepMotion,
+  advancePhysics,
+  surfaceVelocity,
+  springStep,
 } = await import(
   `data:text/javascript;base64,${Buffer.from(outputText).toString("base64")}`
 );
@@ -224,4 +227,137 @@ test("red warning brake settles momentum before the red phase", () => {
   assert.equal(r.body.x, -28);
   assert.equal(r.body.z, -20);
   assert.equal(r.motion.vx, 0);
+});
+
+test("fixed simulation gives the same travel at 30, 60 and 144 rendering FPS", () => {
+  const run = (fps) => {
+    let p = body(),
+      m = createMotion(),
+      remainder = 0;
+    for (let i = 0; i < fps * 2; i++) {
+      const frame = advancePhysics(remainder, 1 / fps, (dt) => {
+        const r = stepMotion(
+          p,
+          m,
+          { x: 1, z: 0, speed: 4.5, jump: false },
+          dt,
+          [],
+        );
+        p = r.body;
+        m = r.motion;
+      });
+      remainder = frame.remainder;
+    }
+    return p;
+  };
+  const reference = run(120);
+  for (const fps of [30, 60, 144])
+    assert(Math.abs(run(fps).x - reference.x) < 1e-8);
+});
+test("fixed simulation bounds catchup work and never advances on pause", () => {
+  let steps = 0;
+  const r = advancePhysics(0, 30, () => steps++);
+  assert.equal(steps, 18);
+  assert(r.alpha < 1);
+  advancePhysics(r.remainder, 0, () => steps++);
+  assert.equal(steps, 18);
+});
+test("airborne momentum persists without input and steering cannot instantly reverse it", () => {
+  let p = { ...body(0, 0, 2), grounded: false, vy: 3 },
+    m = { ...createMotion(), vx: 6 };
+  for (let i = 0; i < 30; i++) {
+    const r = stepMotion(
+      p,
+      m,
+      { x: 0, z: 0, speed: 6.5, jump: false },
+      1 / 120,
+      [],
+    );
+    p = r.body;
+    m = r.motion;
+  }
+  assert(m.vx > 5.8);
+  const r = stepMotion(
+    p,
+    m,
+    { x: -1, z: 0, speed: 6.5, jump: false },
+    1 / 120,
+    [],
+  );
+  assert(r.motion.vx > 5.7);
+});
+test("rotating platform carries an idle rider without fake walking", () => {
+  let p = body(-28, 17),
+    m = createMotion();
+  const surface = { x: -28, z: 15, radius: 5.8, speed: 0.6 };
+  for (let i = 0; i < 120; i++) {
+    const r = stepMotion(
+      p,
+      m,
+      { x: 0, z: 0, speed: 4.5, jump: false, surface },
+      1 / 120,
+      [],
+    );
+    p = r.body;
+    m = r.motion;
+  }
+  assert(p.x > -27);
+  assert(Math.abs(Math.hypot(p.x + 28, p.z - 15) - 2) < 0.02);
+  assert.equal(m.state, "idle");
+  assert.equal(p.y, 0.22);
+});
+test("jump inherits surface momentum and transitions through falling and landing", () => {
+  const surface = { x: -28, z: 15, radius: 5.8, speed: 0.6 };
+  let r = stepMotion(
+    body(-28, 17),
+    createMotion(),
+    { x: 0, z: 0, speed: 4.5, jump: true, surface },
+    1 / 120,
+    [],
+  );
+  assert(r.motion.vx > 1);
+  assert.equal(r.motion.state, "jump");
+  let fell = false,
+    landed = false;
+  for (let i = 0; i < 150; i++) {
+    r = stepMotion(
+      r.body,
+      r.motion,
+      { x: 0, z: 0, speed: 4.5, jump: false, surface },
+      1 / 120,
+      [],
+    );
+    fell ||= r.motion.state === "fall";
+    landed ||= r.motion.state === "land";
+  }
+  assert(fell && landed);
+  assert(r.body.grounded);
+});
+test("slope movement preserves surface speed instead of accelerating uphill", () => {
+  const p = body(0, -16),
+    m = { ...createMotion(), vz: -4.5 };
+  const r = stepMotion(
+    p,
+    m,
+    { x: 0, z: -1, speed: 4.5, jump: false },
+    1 / 120,
+    [],
+  );
+  assert(
+    Math.abs(Math.hypot(r.body.z - p.z, r.body.y - p.y) / (1 / 120) - 4.5) <
+      0.02,
+  );
+});
+test("Sketchbook spring adaptation settles without oscillating around a standing target", () => {
+  let p = 0,
+    v = 0;
+  for (let i = 0; i < 300; i++) {
+    const s = springStep(p, 4.5, v, 18, 0.55, 1 / 120);
+    p = s.position;
+    v = s.velocity;
+    assert(p <= 4.500001);
+  }
+  assert(Math.abs(p - 4.5) < 0.001);
+  assert(Math.abs(v) < 0.001);
+  assert.deepEqual(surfaceVelocity(body(), undefined), { x: 0, z: 0 });
 });

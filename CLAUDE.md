@@ -12,6 +12,10 @@ The root page now mounts a real third-person Three.js world with walking, jumpin
 
 The owner supplied three MP3s in `src/data/` and explicitly requested using them. Runtime copies live in `public/audio/world/`. Music is opt-in and follows game phase/pause state. Local CC0 Kenney scenery models and their license are under `public/models/`; architecture and characters are procedural. Visual game signals work with audio disabled.
 
+## Sketchbook physics reference
+
+The owner requested using `/home/akshit/Sketchbook` as the reference for consecutive physics improvements. Its MIT spring helper is adapted in `rules.ts`; runtime uses a true 120 Hz accumulator with previous/current body interpolation. Ground and airborne movement are separate, the carousel carries riders and passes velocity into jumps, and the avatar blends locomotion poses with spring turning and banking. See `docs/sketchbook-physics.md` and `public/licenses/Sketchbook-MIT.txt`. Do not edit the reference repository. Existing camera clearance and Red Light’s explicit warning brake remain intentional.
+
 ## Saved workshop design — October 2026
 
 The user approved **Inside the Machine with warm workshop materials** and the site has been revamped accordingly. The active page is `src/app/page.tsx`, styled by `src/app/workshop.css` after the legacy globals. It uses `src/components/workshop/` for navigation, interactive 3D scenes, project selection, and skill evidence. The procedural Three.js renderer lives in `src/lib/workshop-scene.ts` and is dynamically imported near the viewport. Scene rendering stops offscreen and in hidden tabs; reduced motion renders still views, and a CSS assembly is the WebGL/no-JS fallback.

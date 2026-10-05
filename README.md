@@ -33,6 +33,12 @@ Eight connected places contain the player profile, career staircase, project con
 
 Games pause with menus, window blur, and hidden tabs. Music is off initially and follows game phases after opting in. Owner-supplied tracks from `src/data/` are copied into `public/audio/world/` for static hosting; original files are preserved. Scenery GLBs are from Kenney’s CC0 Nature Kit; see `public/models/ATTRIBUTION.md` and the included license. Characters and architecture are generated in code.
 
+## Sketchbook-inspired controller
+
+This iteration adapts the spring integration and fixed-frame simulation patterns from the owner’s local Sketchbook checkout. The controller runs at 120 Hz with interpolated rendering, spring-based locomotion and turning, retained airborne momentum, slope-adjusted movement, moving-carousel contact velocity, and blended jump/fall/landing poses. The original MIT notice ships with the site.
+
+See [adaptation notes](docs/sketchbook-physics.md) for the exact source files, reference commit, changes, and integration boundaries.
+
 ## Editing
 
 | File | Purpose |

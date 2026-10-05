@@ -735,6 +735,14 @@ export default function WorldExperience() {
             >
               Kenney Nature Kit (CC0)
             </a>
+            {" · Physics adaptations: "}
+            <a
+              href="/licenses/Sketchbook-MIT.txt"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Sketchbook (MIT)
+            </a>
           </small>
         </Modal>
       )}

@@ -7,6 +7,8 @@ import {
   distance,
   groundAt,
   createMotion,
+  advancePhysics,
+  springStep,
   stepMotion,
   POIS,
   ropeZ,
@@ -54,6 +56,12 @@ export function createWorld(
   let body: Body = { x: 0, z: 7, y: 0, vy: 0, grounded: true },
     trial: SpatialTrial | null = null;
   let motion = createMotion();
+  let accumulator = 0,
+    previousBody = { ...body },
+    rotationVelocity = 0,
+    lean = 0,
+    bank = 0;
+  const visualPosition = new THREE.Vector3();
   let activePointer: number | null = null;
   let joystick = { x: 0, y: 0 };
   const keys = new Set<string>(),
@@ -92,6 +100,7 @@ export function createWorld(
   scene.add(sun);
   const world = buildWorld(scene, () => disposed),
     audio = createWorldAudio();
+  world.player.group.rotation.order = "YXZ";
   void Promise.all(world.assetPromises).then(() => {
     renderNeeded = true;
   });
@@ -133,7 +142,11 @@ export function createWorld(
       grounded: true,
     };
     yaw = wantedYaw = zone.yaw;
+    world.player.group.rotation.y = zone.yaw + Math.PI;
     motion = createMotion();
+    accumulator = 0;
+    previousBody = { ...body };
+    rotationVelocity = 0;
     wantedPitch = 0.39;
     cameraFirst = true;
     keys.clear();
@@ -293,6 +306,12 @@ export function createWorld(
             ? 6.5
             : 4.5;
       const old = body;
+      previousBody = { ...body };
+      const riding =
+        trial?.kind === "mingle" &&
+        trial.status === "playing" &&
+        trial.phase === "spinning";
+      if (riding) world.carousel.rotation.y += dt * 0.6;
       const result = stepMotion(
         body,
         motion,
@@ -301,6 +320,9 @@ export function createWorld(
           z: -Math.sin(yaw) * x - Math.cos(yaw) * z,
           speed,
           jump: jumpRequested,
+          surface: riding
+            ? { x: -28, z: 15, radius: 5.8, speed: 0.6 }
+            : undefined,
           brake:
             !!trial &&
             (trial.status !== "playing" || trial.phase === "warning"),
@@ -330,13 +352,27 @@ export function createWorld(
         }
       }
       moved = distance(body, old);
-      if (moved > 0.001)
-        world.player.group.rotation.y = dampAngle(
-          world.player.group.rotation.y,
-          Math.atan2(body.x - old.x, body.z - old.z),
-          16,
+      const relativeSpeed = Math.hypot(motion.vx, motion.vz);
+      if (relativeSpeed > 0.08) {
+        const current = world.player.group.rotation.y;
+        const angle = Math.atan2(motion.vx, motion.vz);
+        const target =
+          current +
+          Math.atan2(Math.sin(angle - current), Math.cos(angle - current));
+        const spring = springStep(
+          current,
+          target,
+          rotationVelocity,
+          24,
+          0.5,
           dt,
         );
+        world.player.group.rotation.y = spring.position;
+        rotationVelocity = spring.velocity;
+      } else {
+        rotationVelocity *= Math.exp(-14 * dt);
+        if (riding && body.grounded) world.player.group.rotation.y += dt * 0.6;
+      }
       if (body.y < -2.5) {
         teleport("jump-rope");
       }
@@ -353,8 +389,10 @@ export function createWorld(
           trial.round !== round &&
           trial.status === "playing"
         ) {
-          body = { x: -28, z: 17, y: 0, vy: 0, grounded: true };
+          body = { x: -28, z: 17, y: groundAt(-28, 17), vy: 0, grounded: true };
           motion = createMotion();
+          previousBody = { ...body };
+          rotationVelocity = 0;
           cameraFirst = true;
         }
         syncSound();
@@ -371,12 +409,46 @@ export function createWorld(
     renderNeeded = false;
     yaw = dampAngle(yaw, wantedYaw, 18, dt);
     pitch = damp(pitch, wantedPitch, 16, dt);
-    const steps = Math.max(1, Math.ceil(dt / (1 / 120)));
-    let moved = 0;
-    for (let i = 0; i < steps; i++) moved += simulate(dt / steps);
-    world.player.group.position.set(body.x, body.y + 0.05, body.z);
-    walkTime += moved / 4.5;
-    world.player.animate(walkTime, moved > 0.001, !body.grounded);
+    const clock = advancePhysics(
+      accumulator,
+      paused || hidden ? 0 : dt,
+      simulate,
+    );
+    accumulator = clock.remainder;
+    visualPosition.set(
+      THREE.MathUtils.lerp(previousBody.x, body.x, clock.alpha),
+      THREE.MathUtils.lerp(previousBody.y, body.y, clock.alpha),
+      THREE.MathUtils.lerp(previousBody.z, body.z, clock.alpha),
+    );
+    world.player.group.position.copy(visualPosition);
+    world.player.group.position.y += 0.05;
+    const speed = Math.hypot(motion.vx, motion.vz);
+    walkTime += (speed * dt) / 4.5;
+    world.player.animate(walkTime, speed > 0.08, !body.grounded, {
+      speed,
+      vertical: body.vy,
+      landing: motion.recovery,
+      dt,
+    });
+    const facing = world.player.group.rotation.y;
+    const forwardAcceleration =
+      (motion.ax * Math.sin(facing) + motion.az * Math.cos(facing)) * 120;
+    lean = damp(
+      lean,
+      body.grounded
+        ? clamp(speed * 0.016 + forwardAcceleration * 0.005, -0.09, 0.17)
+        : -0.04,
+      10,
+      dt,
+    );
+    bank = damp(
+      bank,
+      clamp(-rotationVelocity * 120 * speed * 0.014, -0.18, 0.18),
+      12,
+      dt,
+    );
+    world.player.group.rotation.x = lean;
+    world.player.group.rotation.z = bank;
     landing = damp(landing, 0, 12, dt);
     world.player.group.scale.set(
       1 + landing * 0.2,
@@ -399,8 +471,6 @@ export function createWorld(
             : "GREEN LIGHT",
       );
     }
-    if (!paused && trial?.kind === "mingle" && trial.phase === "spinning")
-      world.carousel.rotation.y += dt * 0.6;
     if (trial?.kind === "jump-rope") {
       world.ropeRig.position.z = ropeZ(Math.min(trial.round, 4));
       world.rope.rotation.x =
@@ -408,12 +478,17 @@ export function createWorld(
     }
     // Smooth the vertical follow over stairs without letting the pivot sink into the terrain.
     targetHeight = cameraFirst
-      ? body.y + 1.3
+      ? visualPosition.y + 1.3
       : Math.max(
-          body.y + 0.85,
-          damp(targetHeight, body.y + 1.3, body.grounded ? 12 : 9, dt),
+          visualPosition.y + 0.85,
+          damp(
+            targetHeight,
+            visualPosition.y + 1.3,
+            body.grounded ? 12 : 9,
+            dt,
+          ),
         );
-    target.set(body.x, targetHeight, body.z);
+    target.set(visualPosition.x, targetHeight, visualPosition.z);
     desired.set(
       Math.sin(yaw) * Math.cos(pitch),
       Math.sin(pitch),
@@ -473,7 +548,9 @@ export function createWorld(
       keys.clear();
       joystick = { x: 0, y: 0 };
       jumpRequested = false;
-      motion = { ...motion, vx: 0, vz: 0, buffer: 0 };
+      motion = { ...motion, vx: 0, vz: 0, ax: 0, az: 0, buffer: 0 };
+      accumulator = 0;
+      previousBody = { ...body };
       drag = false;
       activePointer = null;
       syncSound();
@@ -491,6 +568,10 @@ export function createWorld(
       yaw = wantedYaw = 0;
       wantedPitch = kind === "jump-rope" ? 0.48 : 0.39;
       motion = createMotion();
+      accumulator = 0;
+      previousBody = { ...body };
+      rotationVelocity = 0;
+      world.player.group.rotation.y = Math.PI;
       cameraFirst = true;
       syncSound();
       publish();

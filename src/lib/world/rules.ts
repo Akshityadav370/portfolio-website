@@ -145,6 +145,9 @@ export function distance(a: Point, b: Point) {
   return Math.hypot(a.x - b.x, a.z - b.z);
 }
 export function groundAt(x: number, z: number): number {
+  const carouselRadius = Math.hypot(x + 28, z - 15);
+  if (carouselRadius < 5.8) return 0.22;
+  if (carouselRadius < 10.4) return 0.08;
   // Career staircase: a ramp under the visible steps, with a raised landing.
   if (Math.abs(x) < 2.5 && z <= -10 && z >= -27)
     return z < -22 ? 4.2 : ((-10 - z) / 12) * 4.2;
@@ -229,15 +232,90 @@ export function moveBody(
   } else next.grounded = false;
   return next;
 }
+/** Adapted from Sketchbook FunctionLibrary.spring (MIT, swift502).
+ * See public/licenses/Sketchbook-MIT.txt and docs/sketchbook-physics.md.
+ * Sketchbook integrates a spring per fixed frame; these coefficients are tuned for 120 Hz.
+ */
+export function springStep(
+  position: number,
+  target: number,
+  velocity: number,
+  mass: number,
+  damping: number,
+  dt: number,
+) {
+  const steps = Math.max(1, Math.ceil(dt * 120));
+  const h = (dt * 120) / steps;
+  for (let i = 0; i < steps; i++) {
+    velocity += ((target - position) / mass) * h;
+    velocity *= Math.pow(damping, h);
+    position += velocity * h;
+  }
+  return { position, velocity };
+}
+export const PHYSICS_STEP = 1 / 120;
+/** Fixed physics clock, based on Sketchbook SimulatorBase's accumulator/cache pattern. */
+export function advancePhysics(
+  remainder: number,
+  delta: number,
+  step: (dt: number) => void,
+) {
+  let pending = remainder + clamp(delta, 0, 0.15),
+    count = 0;
+  while (pending + 1e-10 >= PHYSICS_STEP && count < 18) {
+    step(PHYSICS_STEP);
+    pending = Math.max(0, pending - PHYSICS_STEP);
+    count++;
+  }
+  return {
+    remainder: pending,
+    alpha: clamp(pending / PHYSICS_STEP, 0, 1),
+    steps: count,
+  };
+}
+export type Locomotion = "idle" | "walk" | "run" | "jump" | "fall" | "land";
+export type MovingSurface = {
+  x: number;
+  z: number;
+  radius: number;
+  speed: number;
+};
+/** Surface velocity at a contact point: angular velocity cross relative position. */
+export function surfaceVelocity(body: Point, surface?: MovingSurface): Point {
+  if (!surface || distance(body, surface) > surface.radius)
+    return { x: 0, z: 0 };
+  return {
+    x: surface.speed * (body.z - surface.z),
+    z: -surface.speed * (body.x - surface.x),
+  };
+}
 export type Motion = {
   vx: number;
   vz: number;
   coyote: number;
   buffer: number;
   impact: number;
+  ax: number;
+  az: number;
+  state: Locomotion;
+  recovery: number;
+  supportX: number;
+  supportZ: number;
 };
 export function createMotion(): Motion {
-  return { vx: 0, vz: 0, coyote: 0, buffer: 0, impact: 0 };
+  return {
+    vx: 0,
+    vz: 0,
+    coyote: 0,
+    buffer: 0,
+    impact: 0,
+    ax: 0,
+    az: 0,
+    state: "idle",
+    recovery: 0,
+    supportX: 0,
+    supportZ: 0,
+  };
 }
 /** Ground acceleration, braking, limited air steering, jump buffering and coyote time. */
 export function stepMotion(
@@ -249,6 +327,7 @@ export function stepMotion(
     speed: number;
     jump: boolean;
     brake?: boolean;
+    surface?: MovingSurface;
   },
   dt: number,
   obstacles: Obstacle[],
@@ -260,14 +339,50 @@ export function stepMotion(
   const scale = input.speed / Math.max(1, magnitude);
   const tx = input.x * scale,
     tz = input.z * scale;
-  const change = Math.hypot(tx - next.vx, tz - next.vz);
-  const acceleration = body.grounded ? (magnitude > 0.01 ? 30 : 42) : 10;
-  const ratio = change > 0 ? Math.min(1, (acceleration * dt) / change) : 0;
-  next.vx += (tx - next.vx) * ratio;
-  next.vz += (tz - next.vz) * ratio;
+  if (body.grounded) {
+    const moving = magnitude > 0.01;
+    const sx = springStep(
+      next.vx,
+      tx,
+      next.ax,
+      moving ? 18 : 5,
+      moving ? 0.55 : 0.45,
+      dt,
+    );
+    const sz = springStep(
+      next.vz,
+      tz,
+      next.az,
+      moving ? 18 : 5,
+      moving ? 0.55 : 0.45,
+      dt,
+    );
+    next.vx = sx.position;
+    next.ax = sx.velocity;
+    next.vz = sz.position;
+    next.az = sz.velocity;
+    if (!moving && Math.hypot(next.vx, next.vz) < 0.015) {
+      next.vx = next.vz = next.ax = next.az = 0;
+    }
+  } else {
+    // Like Sketchbook's Falling state: preserve takeoff momentum, add limited steering.
+    const maximum = Math.max(input.speed, Math.hypot(next.vx, next.vz));
+    next.vx =
+      next.vx * Math.exp(-0.08 * dt) +
+      (input.x / Math.max(1, magnitude)) * 4 * dt;
+    next.vz =
+      next.vz * Math.exp(-0.08 * dt) +
+      (input.z / Math.max(1, magnitude)) * 4 * dt;
+    const speed = Math.hypot(next.vx, next.vz);
+    if (speed > maximum) {
+      next.vx *= maximum / speed;
+      next.vz *= maximum / speed;
+    }
+    next.ax = next.az = 0;
+  }
   if (input.brake) {
-    next.vx = 0;
-    next.vz = 0;
+    next.vx = next.ax = 0;
+    next.vz = next.az = 0;
     next.buffer = 0;
   }
   const jumping = next.buffer > 0 && next.coyote > 0;
@@ -275,17 +390,74 @@ export function stepMotion(
     next.buffer = 0;
     next.coyote = 0;
   }
+  const surface = body.grounded
+    ? surfaceVelocity(body, input.surface)
+    : { x: 0, z: 0 };
+  // Keep running speed consistent along slopes instead of adding free vertical speed.
+  const gx =
+    (groundAt(body.x + 0.05, body.z) - groundAt(body.x - 0.05, body.z)) / 0.1;
+  const gz =
+    (groundAt(body.x, body.z + 0.05) - groundAt(body.x, body.z - 0.05)) / 0.1;
+  const horizontal = Math.hypot(next.vx, next.vz);
+  const rise = gx * next.vx + gz * next.vz;
+  const slopeScale =
+    body.grounded && Math.abs(gx) < 1 && Math.abs(gz) < 1 && horizontal > 0.01
+      ? horizontal / Math.hypot(horizontal, rise)
+      : 1;
+  if (jumping) {
+    next.vx += surface.x;
+    next.vz += surface.z;
+  }
+  const carryX = jumping ? 0 : surface.x,
+    carryZ = jumping ? 0 : surface.z;
+  const dx = (next.vx * slopeScale + carryX) * dt,
+    dz = (next.vz * slopeScale + carryZ) * dt;
   const updated = moveBody(
     jumping ? { ...body, grounded: true } : body,
-    next.vx * dt,
-    next.vz * dt,
+    dx,
+    dz,
     dt,
     obstacles,
     jumping,
   );
-  if (Math.abs(updated.x - body.x - next.vx * dt) > 0.001) next.vx = 0;
-  if (Math.abs(updated.z - body.z - next.vz * dt) > 0.001) next.vz = 0;
-  if (!body.grounded && updated.grounded) next.impact = Math.abs(body.vy);
+  if (Math.abs(updated.x - body.x - dx) > 0.001) {
+    next.vx = 0;
+    next.ax = 0;
+  }
+  if (Math.abs(updated.z - body.z - dz) > 0.001) {
+    next.vz = 0;
+    next.az = 0;
+  }
+  next.recovery = Math.max(0, next.recovery - dt);
+  if (!body.grounded && updated.grounded) {
+    next.impact = Math.abs(body.vy);
+    next.recovery = next.impact > 9 ? 0.26 : 0.1;
+    // Once grounded, remove the inherited platform component before applying it anew.
+    const contact = surfaceVelocity(updated, input.surface);
+    next.vx -= contact.x;
+    next.vz -= contact.z;
+    next.supportX = next.supportZ = 0;
+  }
+  if (jumping) {
+    next.supportX = surface.x;
+    next.supportZ = surface.z;
+  } else if (body.grounded && !updated.grounded) {
+    next.vx += surface.x;
+    next.vz += surface.z;
+    next.supportX = surface.x;
+    next.supportZ = surface.z;
+  }
+  next.state = !updated.grounded
+    ? updated.vy > 0
+      ? "jump"
+      : "fall"
+    : next.recovery > 0
+      ? "land"
+      : Math.hypot(next.vx, next.vz) > 0.08
+        ? Math.hypot(next.vx, next.vz) > 5
+          ? "run"
+          : "walk"
+        : "idle";
   return { body: updated, motion: next };
 }
 export type SpatialTrial = {
