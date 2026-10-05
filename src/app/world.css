@@ -883,3 +883,12 @@
   background: #f2eddf;
   color: #22473d;
 }
+
+.world-camera-buttons {
+  display: flex;
+  gap: 10px;
+}
+.world-camera-buttons button {
+  flex: 1;
+  text-align: center;
+}

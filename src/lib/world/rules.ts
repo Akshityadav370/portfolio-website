@@ -154,6 +154,13 @@ export function groundAt(x: number, z: number): number {
   if (Math.abs(x) < 5 && z > 27 && z < 46) return -4;
   return 0;
 }
+export const PLAYER_RADIUS = 0.32;
+export const PLAYER_HEIGHT = 1.85;
+function overlaps(x: number, z: number, o: Obstacle) {
+  const nx = clamp(x, o.x - o.w / 2, o.x + o.w / 2);
+  const nz = clamp(z, o.z - o.d / 2, o.z + o.d / 2);
+  return (x - nx) ** 2 + (z - nz) ** 2 < PLAYER_RADIUS ** 2 - 1e-8;
+}
 export function moveBody(
   body: Body,
   dx: number,
@@ -163,35 +170,123 @@ export function moveBody(
   jump = false,
 ): Body {
   const next = { ...body };
+  const wasGrounded = body.grounded;
   if (jump && next.grounded) {
     next.vy = 6.2;
     next.grounded = false;
   }
+  const step = next.grounded ? 0.32 : 0.015;
   const blocked = (x: number, z: number) =>
     obstacles.some(
       (o) =>
-        x > o.x - o.w / 2 - 0.32 &&
-        x < o.x + o.w / 2 + 0.32 &&
-        z > o.z - o.d / 2 - 0.32 &&
-        z < o.z + o.d / 2 + 0.32 &&
-        next.y + 1.55 > o.bottom &&
-        next.y < o.top - 0.05,
+        overlaps(x, z, o) &&
+        next.y + PLAYER_HEIGHT > o.bottom + 0.001 &&
+        next.y + step < o.top - 0.001,
     );
-  const tryX = clamp(next.x + dx, -43, 43);
-  if (!blocked(tryX, next.z) && groundAt(tryX, next.z) <= next.y + 0.44)
-    next.x = tryX;
-  const tryZ = clamp(next.z + dz, -43, 54);
-  if (!blocked(next.x, tryZ) && groundAt(next.x, tryZ) <= next.y + 0.44)
-    next.z = tryZ;
-  const floor = groundAt(next.x, next.z);
-  next.vy -= 17 * dt;
+  const support = (x: number, z: number) => {
+    let floor = groundAt(x, z);
+    for (const o of obstacles)
+      if (overlaps(x, z, o) && o.top <= next.y + step + 0.001)
+        floor = Math.max(floor, o.top);
+    return floor;
+  };
+  // Subdivide displacement so a sprint or a delayed frame cannot cross a thin wall.
+  const slices = Math.max(1, Math.ceil(Math.hypot(dx, dz) / 0.1));
+  for (let i = 0; i < slices; i++) {
+    const x = clamp(next.x + dx / slices, -43, 43);
+    if (!blocked(x, next.z) && support(x, next.z) <= next.y + step) next.x = x;
+    const z = clamp(next.z + dz / slices, -43, 54);
+    if (!blocked(next.x, z) && support(next.x, z) <= next.y + step) next.z = z;
+    if (next.grounded) {
+      const floor = support(next.x, next.z);
+      if (Math.abs(floor - next.y) <= 0.32) next.y = floor;
+    }
+  }
+  let floor = support(next.x, next.z);
+  const oldY = next.y;
+  next.vy = Math.max(-22, next.vy - 17 * dt);
   next.y += next.vy * dt;
-  if (next.y <= floor) {
+  for (const o of obstacles) {
+    if (!overlaps(next.x, next.z, o)) continue;
+    if (
+      next.vy > 0 &&
+      oldY + PLAYER_HEIGHT <= o.bottom + 0.001 &&
+      next.y + PLAYER_HEIGHT >= o.bottom
+    ) {
+      next.y = o.bottom - PLAYER_HEIGHT;
+      next.vy = 0;
+    }
+    if (next.vy <= 0 && oldY >= o.top - 0.001 && next.y <= o.top)
+      floor = Math.max(floor, o.top);
+  }
+  if (
+    next.y <= floor ||
+    (wasGrounded && !jump && next.vy <= 0 && oldY - floor <= 0.2)
+  ) {
     next.y = floor;
     next.vy = 0;
     next.grounded = true;
   } else next.grounded = false;
   return next;
+}
+export type Motion = {
+  vx: number;
+  vz: number;
+  coyote: number;
+  buffer: number;
+  impact: number;
+};
+export function createMotion(): Motion {
+  return { vx: 0, vz: 0, coyote: 0, buffer: 0, impact: 0 };
+}
+/** Ground acceleration, braking, limited air steering, jump buffering and coyote time. */
+export function stepMotion(
+  body: Body,
+  motion: Motion,
+  input: {
+    x: number;
+    z: number;
+    speed: number;
+    jump: boolean;
+    brake?: boolean;
+  },
+  dt: number,
+  obstacles: Obstacle[],
+) {
+  const next = { ...motion, impact: 0 };
+  next.coyote = body.grounded ? 0.09 : Math.max(0, next.coyote - dt);
+  next.buffer = input.jump ? 0.12 : Math.max(0, next.buffer - dt);
+  const magnitude = Math.hypot(input.x, input.z);
+  const scale = input.speed / Math.max(1, magnitude);
+  const tx = input.x * scale,
+    tz = input.z * scale;
+  const change = Math.hypot(tx - next.vx, tz - next.vz);
+  const acceleration = body.grounded ? (magnitude > 0.01 ? 30 : 42) : 10;
+  const ratio = change > 0 ? Math.min(1, (acceleration * dt) / change) : 0;
+  next.vx += (tx - next.vx) * ratio;
+  next.vz += (tz - next.vz) * ratio;
+  if (input.brake) {
+    next.vx = 0;
+    next.vz = 0;
+    next.buffer = 0;
+  }
+  const jumping = next.buffer > 0 && next.coyote > 0;
+  if (jumping) {
+    next.buffer = 0;
+    next.coyote = 0;
+  }
+  const updated = moveBody(
+    jumping ? { ...body, grounded: true } : body,
+    next.vx * dt,
+    next.vz * dt,
+    dt,
+    obstacles,
+    jumping,
+  );
+  if (Math.abs(updated.x - body.x - next.vx * dt) > 0.001) next.vx = 0;
+  if (Math.abs(updated.z - body.z - next.vz * dt) > 0.001) next.vz = 0;
+  if (!body.grounded && updated.grounded) next.impact = Math.abs(body.vy);
+  return { body: updated, motion: next };
 }
 export type SpatialTrial = {
   kind: GameId;

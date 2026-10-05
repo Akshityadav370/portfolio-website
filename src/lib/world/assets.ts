@@ -546,6 +546,70 @@ export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
   sign(root, "← GAMES   /   WORK →", 9.8, 2.8, 9, 4.5, 0.7);
   cylinder(root, 9.8, 1.2, 8.95, 0.08, 2.4, palette.dark);
   // Merge static geometry by material to keep draw calls bounded.
+  const cameraObstacles: Obstacle[] = [];
+  function cameraBounds(object: THREE.Object3D) {
+    object.updateWorldMatrix(true, true);
+    object.traverse((o) => {
+      if (!(o instanceof THREE.Mesh)) return;
+      o.geometry.computeBoundingBox();
+      const bounds = o.geometry
+        .boundingBox!.clone()
+        .applyMatrix4(o.matrixWorld);
+      const size = bounds.getSize(new THREE.Vector3()),
+        center = bounds.getCenter(new THREE.Vector3());
+      cameraObstacles.push({
+        x: center.x,
+        z: center.z,
+        w: size.x,
+        d: size.z,
+        bottom: bounds.min.y,
+        top: bounds.max.y,
+      });
+    });
+  }
+  cameraBounds(root);
+  const movingCameraObstacles: Obstacle[] = [];
+  function updateMovingCameraObstacles() {
+    movingCameraObstacles.length = 0;
+    // Conservative volumes for the doll and the two moving rope platforms.
+    movingCameraObstacles.push({
+      x: -28,
+      z: -36.7,
+      w: 2.3,
+      d: 1.7,
+      bottom: 0,
+      top: 5.3,
+    });
+    for (const x of [-3.5, 3.5])
+      movingCameraObstacles.push({
+        x,
+        z: ropeRig.position.z,
+        w: 2,
+        d: 2,
+        bottom: 0,
+        top: 6,
+      });
+    movingCameraObstacles.push({
+      x: -28,
+      z: 15,
+      w: 0.34,
+      d: 0.34,
+      bottom: 0,
+      top: 4.2,
+    });
+    for (let i = 0; i < 8; i++) {
+      const angle = (i / 8) * Math.PI * 2 + carousel.rotation.y;
+      movingCameraObstacles.push({
+        x: -28 + Math.sin(angle) * 4.8,
+        z: 15 + Math.cos(angle) * 4.8,
+        w: 0.11,
+        d: 0.11,
+        bottom: 0,
+        top: 3.6,
+      });
+    }
+    return movingCameraObstacles;
+  }
   root.updateMatrixWorld(true);
   const batches = new Map<THREE.Material, THREE.BufferGeometry[]>();
   const oldMeshes: THREE.Mesh[] = [];
@@ -637,6 +701,7 @@ export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
           }
         });
         scene.add(model);
+        cameraBounds(model);
         if (type < 2)
           obstacles.push({ x, z, w: 1, d: 1, bottom: 0, top: height });
       }
@@ -648,21 +713,11 @@ export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
     );
   const player = character(dynamic, 0, 7);
   player.group.rotation.y = Math.PI;
-  const collisionMaterial = new THREE.MeshBasicMaterial({ visible: false });
-  const cameraColliders: THREE.Mesh[] = [];
-  for (const o of obstacles) {
-    const mesh = new THREE.Mesh(
-      new THREE.BoxGeometry(o.w, o.top - o.bottom, o.d),
-      collisionMaterial,
-    );
-    mesh.position.set(o.x, (o.top + o.bottom) / 2, o.z);
-    scene.add(mesh);
-    cameraColliders.push(mesh);
-  }
   return {
     player,
     obstacles,
-    cameraColliders,
+    cameraObstacles,
+    updateMovingCameraObstacles,
     dollHead,
     redSignal,
     carousel,

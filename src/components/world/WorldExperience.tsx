@@ -308,6 +308,7 @@ export default function WorldExperience() {
     [sound, setSound] = useState(false),
     [low, setLow] = useState(false),
     [volume, setVolume] = useState(0.35),
+    [cameraSensitivity, setCameraSensitivity] = useState(1),
     [stick, setStick] = useState({ x: 0, y: 0 });
   const screenRef = useRef<Screen>("invitation");
   useEffect(() => {
@@ -413,6 +414,16 @@ export default function WorldExperience() {
             <nav aria-label="World controls">
               <button onClick={() => setScreen("map")} aria-label="Open map">
                 Map <kbd>M</kbd>
+              </button>
+              <button
+                aria-label="Recenter camera"
+                title="Recenter camera (C)"
+                onClick={() => {
+                  runtime.current?.recenter();
+                  host.current?.focus();
+                }}
+              >
+                ↺
               </button>
               <button onClick={changeSound} aria-pressed={sound}>
                 {sound ? "Sound on" : "Sound off"}
@@ -681,6 +692,30 @@ export default function WorldExperience() {
             >
               {low ? "Graphics: light" : "Graphics: full"}
             </button>
+            <label>
+              Camera sensitivity{" "}
+              <input
+                aria-label="Camera sensitivity"
+                type="range"
+                min=".4"
+                max="2"
+                step=".1"
+                value={cameraSensitivity}
+                onChange={(e) => {
+                  const value = Number(e.target.value);
+                  setCameraSensitivity(value);
+                  runtime.current?.setCameraSensitivity(value);
+                }}
+              />
+            </label>
+            <div className="world-camera-buttons">
+              <button onClick={() => runtime.current?.setCameraDistance(4.5)}>
+                Closer view
+              </button>
+              <button onClick={() => runtime.current?.setCameraDistance(9)}>
+                Wider view
+              </button>
+            </div>
             <button onClick={() => setScreen("map")}>
               Open map / recover position
             </button>
@@ -688,7 +723,8 @@ export default function WorldExperience() {
           </div>
           <p className="world-help">
             WASD / arrows to walk · Drag to look · Scroll to zoom · Space to
-            jump · Shift to run · E to interact · M for map · Esc to pause
+            jump · Shift to run · E to interact · C to recenter camera · M for
+            map · Esc to pause
           </p>
           <small>
             Scenery:{" "}

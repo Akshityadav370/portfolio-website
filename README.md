@@ -21,7 +21,9 @@ Open http://localhost:3000. Next.js fetches the existing Geist fonts during the 
 
 ## Explore and play
 
-WASD/arrows walk, Shift runs, Space jumps, dragging turns the camera, and scrolling adjusts camera distance. Approach a pink marker and press E. M opens a map with fast travel; Escape pauses. Touch devices have a movement joystick and jump button. A light graphics option disables shadows and lowers rendering resolution.
+WASD/arrows walk, Shift runs, Space jumps, dragging turns the camera, and scrolling adjusts camera distance. C (or the ↺ button) recenters behind the character. Camera sensitivity and closer/wider presets are available in the pause menu. Approach a pink marker and press E. M opens a map with fast travel; Escape pauses. Touch devices have a movement joystick and jump button. A light graphics option disables shadows and lowers rendering resolution.
+
+Movement includes acceleration, ground braking, limited air steering, buffered jumps, a short coyote-time window, solid landings and ceiling collision. The camera uses volume-based obstruction checks for architecture, scenery, and moving arena props, pulls in immediately, and eases back out. Indoor distance limits, smooth stair following, and close-camera character fading keep tight spaces navigable.
 
 Eight connected places contain the player profile, career staircase, project control room, skill equipment room, three game arenas, and contact portal. Portfolio facts come from `src/data/resume.ts`.
 
@@ -40,9 +42,11 @@ Games pause with menus, window blur, and hidden tabs. Music is off initially and
 | `src/app/world.css` | World interface and responsive layouts |
 | `src/lib/world/runtime.ts` | Third-person camera, input, rendering, lifecycle, and gameplay integration |
 | `src/lib/world/assets.ts` | Architecture, characters, imported scenery, collision geometry |
+| `src/lib/world/camera.ts` | Camera clearance and damping math |
 | `src/lib/world/rules.ts` | Layout, movement, collision, and spatial trial rules |
 | `src/lib/world/audio.ts` | Opt-in playback tied to game state |
 | `tests/world-rules.test.mjs` | Collision, traversal, jumping, and physical win/loss checks |
+| `tests/world-camera.test.mjs` | Camera clearance, ceiling, recovery, and angle-wrap regressions |
 | `src/app/portfolio/page.tsx` | Preserved scrolling portfolio |
 
 ## Verify and build

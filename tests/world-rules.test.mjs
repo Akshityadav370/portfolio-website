@@ -12,10 +12,17 @@ const { outputText } = ts.transpileModule(source, {
     target: ts.ScriptTarget.ES2020,
   },
 });
-const { moveBody, groundAt, startSpatialTrial, stepSpatialTrial, ropeZ } =
-  await import(
-    `data:text/javascript;base64,${Buffer.from(outputText).toString("base64")}`
-  );
+const {
+  moveBody,
+  groundAt,
+  startSpatialTrial,
+  stepSpatialTrial,
+  ropeZ,
+  createMotion,
+  stepMotion,
+} = await import(
+  `data:text/javascript;base64,${Buffer.from(outputText).toString("base64")}`
+);
 const body = (x = 0, z = 0, y = groundAt(x, z)) => ({
   x,
   z,
@@ -111,4 +118,110 @@ test("rope requires both checkpoint position and an airborne player", () => {
     );
   }
   assert.equal(s.status, "won");
+});
+
+test("fast displacement cannot tunnel through a thin wall", () => {
+  const p = moveBody(body(), 4, 0, 0.04, [
+    { x: 1, z: 0, w: 0.08, d: 4, bottom: 0, top: 4 },
+  ]);
+  assert(p.x < 0.65);
+});
+test("a jump hits a ceiling and lands on solid furniture", () => {
+  const ceiling = [{ x: 0, z: 0, w: 4, d: 4, bottom: 2.15, top: 2.4 }];
+  let p = moveBody(body(), 0, 0, 0.02, ceiling, true);
+  for (let i = 0; i < 20; i++) {
+    p = moveBody(p, 0, 0, 0.02, ceiling);
+    assert(p.y + 1.85 <= 2.151);
+  }
+  const platform = [{ x: 0, z: 0, w: 2, d: 2, bottom: 0, top: 1 }];
+  p = { ...body(0, 0, 2), grounded: false, vy: -2 };
+  for (let i = 0; i < 60; i++) p = moveBody(p, 0, 0, 1 / 120, platform);
+  assert.equal(p.y, 1);
+  assert(p.grounded);
+});
+test("descending a staircase keeps feet grounded", () => {
+  let p = body(0, -23);
+  for (let i = 0; i < 160; i++) {
+    p = moveBody(p, 0, 0.08, 0.02, []);
+    assert(p.grounded);
+    assert(Math.abs(p.y - groundAt(p.x, p.z)) < 0.001);
+  }
+});
+test("motor accelerates, brakes, and normalizes diagonal input", () => {
+  let p = body(),
+    m = createMotion();
+  let result = stepMotion(
+    p,
+    m,
+    { x: 1, z: 0, speed: 6.5, jump: false },
+    1 / 120,
+    [],
+  );
+  assert(result.motion.vx > 0 && result.motion.vx < 1);
+  for (let i = 0; i < 120; i++) {
+    result = stepMotion(
+      p,
+      m,
+      { x: 1, z: 1, speed: 6.5, jump: false },
+      1 / 120,
+      [],
+    );
+    p = result.body;
+    m = result.motion;
+  }
+  assert(Math.hypot(m.vx, m.vz) <= 6.5001);
+  for (let i = 0; i < 30; i++) {
+    result = stepMotion(
+      p,
+      m,
+      { x: 0, z: 0, speed: 6.5, jump: false },
+      1 / 120,
+      [],
+    );
+    p = result.body;
+    m = result.motion;
+  }
+  assert(Math.hypot(m.vx, m.vz) < 0.001);
+});
+test("coyote time allows a late jump but never a second air jump", () => {
+  let p = { ...body(0, 0, 0.2), grounded: false, vy: -1 };
+  let m = { ...createMotion(), coyote: 0.06 };
+  let result = stepMotion(
+    p,
+    m,
+    { x: 0, z: 0, speed: 4.5, jump: true },
+    0.01,
+    [],
+  );
+  assert(result.body.vy > 5);
+  p = result.body;
+  m = result.motion;
+  result = stepMotion(p, m, { x: 0, z: 0, speed: 4.5, jump: true }, 0.01, []);
+  assert(result.body.vy < p.vy);
+});
+test("jump pressed just before landing is buffered", () => {
+  let p = { ...body(0, 0, 0.025), grounded: false, vy: -3 },
+    m = createMotion();
+  let r = stepMotion(p, m, { x: 0, z: 0, speed: 4.5, jump: true }, 0.02, []);
+  assert(r.body.grounded);
+  r = stepMotion(
+    r.body,
+    r.motion,
+    { x: 0, z: 0, speed: 4.5, jump: false },
+    0.01,
+    [],
+  );
+  assert(r.body.vy > 5);
+});
+test("red warning brake settles momentum before the red phase", () => {
+  const r = stepMotion(
+    body(-28, -20),
+    { ...createMotion(), vx: 3, vz: -4 },
+    { x: 0, z: 0, speed: 4.5, jump: false, brake: true },
+    1 / 120,
+    [],
+  );
+  assert.equal(r.body.x, -28);
+  assert.equal(r.body.z, -20);
+  assert.equal(r.motion.vx, 0);
 });

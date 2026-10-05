@@ -1,11 +1,13 @@
 import * as THREE from "three";
+import { cameraClearance, cameraDistance, damp, dampAngle } from "./camera";
 import { buildWorld, disposeObject } from "./assets";
 import { createWorldAudio } from "./audio";
 import {
   clamp,
   distance,
   groundAt,
-  moveBody,
+  createMotion,
+  stepMotion,
   POIS,
   ropeZ,
   startSpatialTrial,
@@ -42,12 +44,17 @@ export function createWorld(
     yaw = 0,
     pitch = 0.39,
     zoom = 7.5,
+    wantedYaw = 0,
+    wantedPitch = 0.39,
+    sensitivity = 1,
     jumpRequested = false,
     drag = false,
     lastX = 0,
     lastY = 0;
   let body: Body = { x: 0, z: 7, y: 0, vy: 0, grounded: true },
     trial: SpatialTrial | null = null;
+  let motion = createMotion();
+  let activePointer: number | null = null;
   let joystick = { x: 0, y: 0 };
   const keys = new Set<string>(),
     discovered = new Set<ZoneId>();
@@ -57,7 +64,7 @@ export function createWorld(
   });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 1.6));
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.shadowMap.type = THREE.PCFShadowMap;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.1;
@@ -89,8 +96,24 @@ export function createWorld(
     renderNeeded = true;
   });
   const target = new THREE.Vector3(),
-    desired = new THREE.Vector3(),
-    ray = new THREE.Raycaster();
+    desired = new THREE.Vector3();
+  let boom = zoom,
+    targetHeight = body.y + 1.3,
+    walkTime = 0,
+    landing = 0;
+  const playerMaterials: THREE.Material[] = [];
+  world.player.group.traverse((o) => {
+    if (o instanceof THREE.Mesh) {
+      const clone = (m: THREE.Material) => {
+        const own = m.clone();
+        playerMaterials.push(own);
+        return own;
+      };
+      o.material = Array.isArray(o.material)
+        ? o.material.map(clone)
+        : clone(o.material);
+    }
+  });
   let cameraFirst = true;
   let nearest: (typeof POIS)[number] | null = null,
     lastSound = "";
@@ -109,7 +132,9 @@ export function createWorld(
       vy: 0,
       grounded: true,
     };
-    yaw = zone.yaw;
+    yaw = wantedYaw = zone.yaw;
+    motion = createMotion();
+    wantedPitch = 0.39;
     cameraFirst = true;
     keys.clear();
     joystick = { x: 0, y: 0 };
@@ -144,6 +169,7 @@ export function createWorld(
         "ArrowRight",
         "Space",
         "KeyE",
+        "KeyC",
         "ShiftLeft",
         "ShiftRight",
       ].includes(e.code)
@@ -152,11 +178,13 @@ export function createWorld(
       keys.add(e.code);
       if (e.code === "Space" && !e.repeat) jumpRequested = true;
       if (e.code === "KeyE" && !e.repeat) interact();
+      if (e.code === "KeyC" && !e.repeat) recenter();
     }
   };
   const keyup = (e: KeyboardEvent) => keys.delete(e.code);
   const down = (e: PointerEvent) => {
-    if (paused) return;
+    if (paused || activePointer !== null || e.button !== 0) return;
+    activePointer = e.pointerId;
     host.focus({ preventScroll: true });
     drag = true;
     lastX = e.clientX;
@@ -164,15 +192,26 @@ export function createWorld(
     host.setPointerCapture(e.pointerId);
   };
   const move = (e: PointerEvent) => {
-    if (!drag || paused) return;
-    yaw -= (e.clientX - lastX) * 0.005;
-    pitch = clamp(pitch + (e.clientY - lastY) * 0.004, 0.08, 1.05);
+    if (!drag || paused || e.pointerId !== activePointer) return;
+    wantedYaw -= (e.clientX - lastX) * 0.005 * sensitivity;
+    wantedPitch = clamp(
+      wantedPitch + (e.clientY - lastY) * 0.004 * sensitivity,
+      0.08,
+      1.15,
+    );
     lastX = e.clientX;
     lastY = e.clientY;
   };
-  const up = () => {
+  const up = (e: PointerEvent) => {
+    if (e.pointerId !== activePointer) return;
     drag = false;
+    activePointer = null;
   };
+  function recenter() {
+    wantedYaw = world.player.group.rotation.y - Math.PI;
+    wantedPitch = 0.39;
+    renderNeeded = true;
+  }
   const wheel = (e: WheelEvent) => {
     e.preventDefault();
     zoom = clamp(zoom + e.deltaY * 0.006, 3.5, 12);
@@ -181,6 +220,7 @@ export function createWorld(
     keys.clear();
     joystick = { x: 0, y: 0 };
     drag = false;
+    activePointer = null;
     if (!paused) callbacks.pause();
   };
   const visibility = () => {
@@ -225,7 +265,6 @@ export function createWorld(
   let previous = performance.now(),
     lastPublish = 0,
     frame = 0,
-    elapsed = 0,
     signal = "";
   function simulate(dt: number) {
     let moved = 0;
@@ -253,10 +292,25 @@ export function createWorld(
           : keys.has("ShiftLeft") || keys.has("ShiftRight")
             ? 6.5
             : 4.5;
-      const dx = (Math.cos(yaw) * x - Math.sin(yaw) * z) * speed * dt,
-        dz = (-Math.sin(yaw) * x - Math.cos(yaw) * z) * speed * dt;
       const old = body;
-      body = moveBody(body, dx, dz, dt, world.obstacles, jumpRequested);
+      const result = stepMotion(
+        body,
+        motion,
+        {
+          x: Math.cos(yaw) * x - Math.sin(yaw) * z,
+          z: -Math.sin(yaw) * x - Math.cos(yaw) * z,
+          speed,
+          jump: jumpRequested,
+          brake:
+            !!trial &&
+            (trial.status !== "playing" || trial.phase === "warning"),
+        },
+        dt,
+        world.obstacles,
+      );
+      body = result.body;
+      motion = result.motion;
+      landing = Math.max(landing, Math.min(0.13, motion.impact * 0.012));
       jumpRequested = false;
       if (trial?.status === "playing") {
         if (trial.kind === "red-light") {
@@ -277,9 +331,11 @@ export function createWorld(
       }
       moved = distance(body, old);
       if (moved > 0.001)
-        world.player.group.rotation.y = Math.atan2(
-          body.x - old.x,
-          body.z - old.z,
+        world.player.group.rotation.y = dampAngle(
+          world.player.group.rotation.y,
+          Math.atan2(body.x - old.x, body.z - old.z),
+          16,
+          dt,
         );
       if (body.y < -2.5) {
         teleport("jump-rope");
@@ -296,8 +352,11 @@ export function createWorld(
           trial.kind === "mingle" &&
           trial.round !== round &&
           trial.status === "playing"
-        )
+        ) {
           body = { x: -28, z: 17, y: 0, vy: 0, grounded: true };
+          motion = createMotion();
+          cameraFirst = true;
+        }
         syncSound();
       }
     }
@@ -310,12 +369,20 @@ export function createWorld(
     previous = now;
     if ((paused || hidden) && !renderNeeded) return;
     renderNeeded = false;
-    elapsed += dt;
-    const steps = Math.max(1, Math.ceil(dt / 0.025));
+    yaw = dampAngle(yaw, wantedYaw, 18, dt);
+    pitch = damp(pitch, wantedPitch, 16, dt);
+    const steps = Math.max(1, Math.ceil(dt / (1 / 120)));
     let moved = 0;
     for (let i = 0; i < steps; i++) moved += simulate(dt / steps);
     world.player.group.position.set(body.x, body.y + 0.05, body.z);
-    world.player.animate(elapsed, moved > 0.001, !body.grounded);
+    walkTime += moved / 4.5;
+    world.player.animate(walkTime, moved > 0.001, !body.grounded);
+    landing = damp(landing, 0, 12, dt);
+    world.player.group.scale.set(
+      1 + landing * 0.2,
+      1 - landing,
+      1 + landing * 0.2,
+    );
     const red = trial?.kind === "red-light" ? trial.phase : "green";
     world.dollHead.rotation.y = THREE.MathUtils.lerp(
       world.dollHead.rotation.y,
@@ -339,22 +406,47 @@ export function createWorld(
       world.rope.rotation.x =
         (-(trial.nextCrossing - trial.elapsed) / 3.6) * Math.PI * 2;
     }
-    target.set(body.x, body.y + 1.25, body.z);
+    // Smooth the vertical follow over stairs without letting the pivot sink into the terrain.
+    targetHeight = cameraFirst
+      ? body.y + 1.3
+      : Math.max(
+          body.y + 0.85,
+          damp(targetHeight, body.y + 1.3, body.grounded ? 12 : 9, dt),
+        );
+    target.set(body.x, targetHeight, body.z);
     desired.set(
-      Math.sin(yaw) * Math.cos(pitch) * zoom,
-      Math.sin(pitch) * zoom,
-      Math.cos(yaw) * Math.cos(pitch) * zoom,
+      Math.sin(yaw) * Math.cos(pitch),
+      Math.sin(pitch),
+      Math.cos(yaw) * Math.cos(pitch),
     );
-    ray.set(target, desired.clone().normalize());
-    ray.far = zoom;
-    const hit = ray.intersectObjects(world.cameraColliders, false)[0];
-    if (hit) desired.setLength(Math.max(0.75, hit.distance - 0.3));
-    desired.add(target);
-    if (cameraFirst) {
-      camera.position.copy(desired);
-      cameraFirst = false;
-    } else camera.position.lerp(desired, 1 - Math.exp(-dt * 12));
+    const indoors =
+      (Math.abs(body.x) < 8 && Math.abs(body.z) < 6) ||
+      (Math.abs(body.x - 25) < 8 &&
+        (Math.abs(body.z + 15) < 6 || Math.abs(body.z - 13) < 6));
+    const wantedDistance = indoors ? Math.min(zoom, 6.2) : zoom;
+    const staticClearance = cameraClearance(
+      target,
+      desired,
+      wantedDistance,
+      world.cameraObstacles,
+    );
+    const clearance = cameraClearance(
+      target,
+      desired,
+      staticClearance,
+      world.updateMovingCameraObstacles(),
+    );
+    boom = cameraFirst ? clearance : cameraDistance(boom, clearance, dt);
+    camera.position.copy(target).addScaledVector(desired, boom);
+    // The boom is recast every frame; no position lerp can drag the camera through a wall.
     camera.lookAt(target);
+    cameraFirst = false;
+    const fade = THREE.MathUtils.smoothstep(boom, 0.35, 1.25);
+    for (const material of playerMaterials) {
+      material.opacity = fade;
+      material.transparent = fade < 1;
+      material.depthWrite = fade > 0.5;
+    }
     renderer.render(scene, camera);
     if (now - lastPublish > 100) {
       publish();
@@ -367,12 +459,23 @@ export function createWorld(
   return {
     teleport,
     interact,
+    recenter,
+    setCameraSensitivity(value: number) {
+      sensitivity = clamp(value, 0.4, 2);
+    },
+    setCameraDistance(value: number) {
+      zoom = clamp(value, 3.5, 12);
+      renderNeeded = true;
+    },
     setPaused(value: boolean) {
       paused = value;
       renderNeeded = true;
       keys.clear();
       joystick = { x: 0, y: 0 };
       jumpRequested = false;
+      motion = { ...motion, vx: 0, vz: 0, buffer: 0 };
+      drag = false;
+      activePointer = null;
       syncSound();
       if (!value) host.focus({ preventScroll: true });
     },
@@ -385,7 +488,9 @@ export function createWorld(
             ? { x: -28, z: 17 }
             : { x: 0, z: 44 };
       body = { ...point, y: groundAt(point.x, point.z), vy: 0, grounded: true };
-      yaw = 0;
+      yaw = wantedYaw = 0;
+      wantedPitch = kind === "jump-rope" ? 0.48 : 0.39;
+      motion = createMotion();
       cameraFirst = true;
       syncSound();
       publish();
