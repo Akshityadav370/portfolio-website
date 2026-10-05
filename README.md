@@ -33,6 +33,12 @@ Eight connected places contain the player profile, career staircase, project con
 
 Games pause with menus, window blur, and hidden tabs. Music is off initially and follows game phases after opting in. Owner-supplied tracks from `src/data/` are copied into `public/audio/world/` for static hosting; original files are preserved. Scenery GLBs are from Kenney’s CC0 Nature Kit; see `public/models/ATTRIBUTION.md` and the included license. Characters and architecture are generated in code.
 
+## Automatic third-person camera
+
+The camera now settles behind the direction of travel, pans through turns at a bounded rate, and frames a little more of the path ahead. Running slightly widens outdoor framing; interiors keep their closer view. Manual dragging has priority and delays automatic follow for 1.6 seconds. While idle, your chosen angle stays put. C / ↺ still recenters immediately, and the pause menu can switch to manual orbit.
+
+A held movement gesture keeps its world heading while the camera pans. Releasing or deliberately changing direction captures the current camera-relative heading, preventing the auto-follow feedback loop that would otherwise make a held side direction run in circles. Small joystick jitter does not reset that heading. Reduced-motion preferences disable the extra look-ahead and speed-based widening.
+
 ## Sketchbook-inspired controller
 
 This iteration adapts the spring integration and fixed-frame simulation patterns from the owner’s local Sketchbook checkout. The controller runs at 120 Hz with interpolated rendering, spring-based locomotion and turning, retained airborne momentum, slope-adjusted movement, moving-carousel contact velocity, and blended jump/fall/landing poses. The original MIT notice ships with the site.

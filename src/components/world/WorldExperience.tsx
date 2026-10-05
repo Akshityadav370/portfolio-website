@@ -309,6 +309,7 @@ export default function WorldExperience() {
     [low, setLow] = useState(false),
     [volume, setVolume] = useState(0.35),
     [cameraSensitivity, setCameraSensitivity] = useState(1),
+    [cameraFollow, setCameraFollow] = useState(true),
     [stick, setStick] = useState({ x: 0, y: 0 });
   const screenRef = useRef<Screen>("invitation");
   useEffect(() => {
@@ -392,6 +393,7 @@ export default function WorldExperience() {
       <div
         ref={host}
         className="world-canvas"
+        data-camera-yaw={snapshot?.yaw.toFixed(3)}
         data-player-x={snapshot?.x.toFixed(2)}
         data-player-z={snapshot?.z.toFixed(2)}
       />
@@ -692,6 +694,17 @@ export default function WorldExperience() {
             >
               {low ? "Graphics: light" : "Graphics: full"}
             </button>
+            <button
+              aria-pressed={cameraFollow}
+              onClick={() => {
+                setCameraFollow(!cameraFollow);
+                runtime.current?.setCameraFollow(!cameraFollow);
+              }}
+            >
+              {cameraFollow
+                ? "Camera: follows movement"
+                : "Camera: manual orbit"}
+            </button>
             <label>
               Camera sensitivity{" "}
               <input
@@ -721,6 +734,11 @@ export default function WorldExperience() {
             </button>
             <a href="/portfolio">Read the full portfolio ↗</a>
           </div>
+          <p className="world-help">
+            The camera settles behind you as you move. Drag to look around;
+            automatic follow resumes after a short delay. Hold a direction to
+            keep your course while the camera turns.
+          </p>
           <p className="world-help">
             WASD / arrows to walk · Drag to look · Scroll to zoom · Space to
             jump · Shift to run · E to interact · C to recenter camera · M for

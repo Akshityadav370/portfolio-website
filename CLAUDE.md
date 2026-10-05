@@ -12,6 +12,10 @@ The root page now mounts a real third-person Three.js world with walking, jumpin
 
 The owner supplied three MP3s in `src/data/` and explicitly requested using them. Runtime copies live in `public/audio/world/`. Music is opt-in and follows game phase/pause state. Local CC0 Kenney scenery models and their license are under `public/models/`; architecture and characters are procedural. Visual game signals work with audio disabled.
 
+## Automatic chase camera
+
+Camera follow is enabled by default, with a manual-orbit option in the pause menu. `camera.ts` holds tested chase-pan, manual-hold, and movement-reference helpers. Keep movement's captured input heading separate from automatic camera yaw; coupling them makes held side input spiral. Intentional direction changes/releasing input refresh that reference. Dragging sets a 1.6-second override even for gestures completed between animation frames. Stationary players and passive carousel riders do not trigger automatic orbit. Existing collision clearance remains applied after the chase framing.
+
 ## Sketchbook physics reference
 
 The owner requested using `/home/akshit/Sketchbook` as the reference for consecutive physics improvements. Its MIT spring helper is adapted in `rules.ts`; runtime uses a true 120 Hz accumulator with previous/current body interpolation. Ground and airborne movement are separate, the carousel carries riders and passes velocity into jumps, and the avatar blends locomotion poses with spring turning and banking. See `docs/sketchbook-physics.md` and `public/licenses/Sketchbook-MIT.txt`. Do not edit the reference repository. Existing camera clearance and Red Light’s explicit warning brake remain intentional.

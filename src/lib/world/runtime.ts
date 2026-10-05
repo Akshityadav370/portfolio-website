@@ -1,5 +1,13 @@
 import * as THREE from "three";
-import { cameraClearance, cameraDistance, damp, dampAngle } from "./camera";
+import {
+  cameraClearance,
+  cameraDistance,
+  damp,
+  dampAngle,
+  movementReference,
+  chaseMemory,
+  chaseYaw,
+} from "./camera";
 import { buildWorld, disposeObject } from "./assets";
 import { createWorldAudio } from "./audio";
 import {
@@ -63,6 +71,16 @@ export function createWorld(
     bank = 0;
   const visualPosition = new THREE.Vector3();
   let activePointer: number | null = null;
+  let followCamera = true,
+    chase = { hold: 0, moving: 0 };
+  let movementFrame = { yaw: 0, x: 0, z: 0 };
+  let leadX = 0,
+    leadZ = 0,
+    framingDistance = 7.5;
+  const reducedMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)",
+  ).matches;
+  const lookTarget = new THREE.Vector3();
   let joystick = { x: 0, y: 0 };
   const keys = new Set<string>(),
     discovered = new Set<ZoneId>();
@@ -142,6 +160,9 @@ export function createWorld(
       grounded: true,
     };
     yaw = wantedYaw = zone.yaw;
+    movementFrame = { yaw, x: 0, z: 0 };
+    chase = { hold: 0, moving: 0 };
+    leadX = leadZ = 0;
     world.player.group.rotation.y = zone.yaw + Math.PI;
     motion = createMotion();
     accumulator = 0;
@@ -200,12 +221,14 @@ export function createWorld(
     activePointer = e.pointerId;
     host.focus({ preventScroll: true });
     drag = true;
+    chase.hold = 1.6;
     lastX = e.clientX;
     lastY = e.clientY;
     host.setPointerCapture(e.pointerId);
   };
   const move = (e: PointerEvent) => {
     if (!drag || paused || e.pointerId !== activePointer) return;
+    chase.hold = 1.6;
     wantedYaw -= (e.clientX - lastX) * 0.005 * sensitivity;
     wantedPitch = clamp(
       wantedPitch + (e.clientY - lastY) * 0.004 * sensitivity,
@@ -219,10 +242,12 @@ export function createWorld(
     if (e.pointerId !== activePointer) return;
     drag = false;
     activePointer = null;
+    chase.hold = 1.6;
   };
   function recenter() {
     wantedYaw = world.player.group.rotation.y - Math.PI;
     wantedPitch = 0.39;
+    chase = { hold: 0.6, moving: 0 };
     renderNeeded = true;
   }
   const wheel = (e: WheelEvent) => {
@@ -299,6 +324,8 @@ export function createWorld(
         x = 0;
         z = 0;
       }
+      movementFrame = movementReference(movementFrame, yaw, x, z);
+      const controlYaw = followCamera ? movementFrame.yaw : yaw;
       const speed =
         trial?.kind === "red-light"
           ? 4.5
@@ -316,8 +343,8 @@ export function createWorld(
         body,
         motion,
         {
-          x: Math.cos(yaw) * x - Math.sin(yaw) * z,
-          z: -Math.sin(yaw) * x - Math.cos(yaw) * z,
+          x: Math.cos(controlYaw) * x - Math.sin(controlYaw) * z,
+          z: -Math.sin(controlYaw) * x - Math.cos(controlYaw) * z,
           speed,
           jump: jumpRequested,
           surface: riding
@@ -407,8 +434,22 @@ export function createWorld(
     previous = now;
     if ((paused || hidden) && !renderNeeded) return;
     renderNeeded = false;
-    yaw = dampAngle(yaw, wantedYaw, 18, dt);
-    pitch = damp(pitch, wantedPitch, 16, dt);
+    const travelSpeed = Math.hypot(motion.vx, motion.vz);
+    if (!paused && !hidden) chase = chaseMemory(chase, travelSpeed, drag, dt);
+    const autoFollowing =
+      followCamera &&
+      !paused &&
+      !hidden &&
+      !drag &&
+      chase.hold <= 0 &&
+      chase.moving > 0.24;
+    if (autoFollowing) {
+      yaw = chaseYaw(yaw, motion.vx, motion.vz, dt);
+      wantedYaw = yaw;
+      const travelPitch = trial?.kind === "jump-rope" ? 0.48 : 0.36;
+      wantedPitch = damp(wantedPitch, travelPitch, 1.8, dt);
+    } else yaw = dampAngle(yaw, wantedYaw, 18, dt);
+    pitch = damp(pitch, wantedPitch, 12, dt);
     const clock = advancePhysics(
       accumulator,
       paused || hidden ? 0 : dt,
@@ -498,11 +539,22 @@ export function createWorld(
       (Math.abs(body.x) < 8 && Math.abs(body.z) < 6) ||
       (Math.abs(body.x - 25) < 8 &&
         (Math.abs(body.z + 15) < 6 || Math.abs(body.z - 13) < 6));
-    const wantedDistance = indoors ? Math.min(zoom, 6.2) : zoom;
+    const runAmount = reducedMotion ? 0 : clamp((speed - 4.5) / 2, 0, 1);
+    const wantedDistance = indoors
+      ? Math.min(zoom, 6.2)
+      : zoom + runAmount * 0.7;
+    framingDistance = cameraFirst
+      ? wantedDistance
+      : damp(framingDistance, wantedDistance, 3, dt);
+    const fov = damp(camera.fov, 58 + (!indoors ? runAmount * 3 : 0), 3, dt);
+    if (Math.abs(fov - camera.fov) > 0.001) {
+      camera.fov = fov;
+      camera.updateProjectionMatrix();
+    }
     const staticClearance = cameraClearance(
       target,
       desired,
-      wantedDistance,
+      framingDistance,
       world.cameraObstacles,
     );
     const clearance = cameraClearance(
@@ -514,7 +566,14 @@ export function createWorld(
     boom = cameraFirst ? clearance : cameraDistance(boom, clearance, dt);
     camera.position.copy(target).addScaledVector(desired, boom);
     // The boom is recast every frame; no position lerp can drag the camera through a wall.
-    camera.lookAt(target);
+    // Frame a little more of the path ahead without moving the collision pivot.
+    const anticipation = autoFollowing && !reducedMotion ? 0.1 : 0;
+    leadX = damp(leadX, motion.vx * anticipation, 4, dt);
+    leadZ = damp(leadZ, motion.vz * anticipation, 4, dt);
+    lookTarget.copy(target);
+    lookTarget.x += leadX;
+    lookTarget.z += leadZ;
+    camera.lookAt(lookTarget);
     cameraFirst = false;
     const fade = THREE.MathUtils.smoothstep(boom, 0.35, 1.25);
     for (const material of playerMaterials) {
@@ -535,6 +594,13 @@ export function createWorld(
     teleport,
     interact,
     recenter,
+    setCameraFollow(value: boolean) {
+      followCamera = value;
+      movementFrame = { yaw, x: 0, z: 0 };
+      chase = { hold: 0, moving: 0 };
+      wantedYaw = yaw;
+      renderNeeded = true;
+    },
     setCameraSensitivity(value: number) {
       sensitivity = clamp(value, 0.4, 2);
     },
@@ -546,6 +612,8 @@ export function createWorld(
       paused = value;
       renderNeeded = true;
       keys.clear();
+      movementFrame = { yaw, x: 0, z: 0 };
+      chase.moving = 0;
       joystick = { x: 0, y: 0 };
       jumpRequested = false;
       motion = { ...motion, vx: 0, vz: 0, ax: 0, az: 0, buffer: 0 };
@@ -566,6 +634,9 @@ export function createWorld(
             : { x: 0, z: 44 };
       body = { ...point, y: groundAt(point.x, point.z), vy: 0, grounded: true };
       yaw = wantedYaw = 0;
+      movementFrame = { yaw, x: 0, z: 0 };
+      chase = { hold: 0, moving: 0 };
+      leadX = leadZ = 0;
       wantedPitch = kind === "jump-rope" ? 0.48 : 0.39;
       motion = createMotion();
       accumulator = 0;

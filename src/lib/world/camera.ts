@@ -52,3 +52,41 @@ export function cameraDistance(current: number, clearance: number, dt: number) {
   // Pull in immediately; ease back only after the obstruction clears.
   return clearance < current ? clearance : damp(current, clearance, 3.5, dt);
 }
+
+export type MovementReference = { yaw: number; x: number; z: number };
+/** Latch a camera-relative heading for one input gesture. Auto-follow must not steer the player. */
+export function movementReference(
+  previous: MovementReference,
+  yaw: number,
+  x: number,
+  z: number,
+): MovementReference {
+  const length = Math.hypot(x, z),
+    oldLength = Math.hypot(previous.x, previous.z);
+  if (length < 0.12) return { yaw, x: 0, z: 0 };
+  const nx = x / length,
+    nz = z / length;
+  const changed = oldLength < 0.12 || nx * previous.x + nz * previous.z < 0.965;
+  return changed ? { yaw, x: nx, z: nz } : previous;
+}
+export type ChaseMemory = { hold: number; moving: number };
+export function chaseMemory(
+  previous: ChaseMemory,
+  speed: number,
+  dragging: boolean,
+  dt: number,
+): ChaseMemory {
+  return {
+    hold: dragging ? 1.6 : Math.max(0, previous.hold - dt),
+    moving: speed > 0.65 ? previous.moving + dt : 0,
+  };
+}
+/** Rate-limited chase pan. A U-turn takes an arc instead of flipping the view. */
+export function chaseYaw(yaw: number, vx: number, vz: number, dt: number) {
+  if (Math.hypot(vx, vz) < 0.65) return yaw;
+  const behind = Math.atan2(-vx, -vz);
+  const difference = Math.atan2(Math.sin(behind - yaw), Math.cos(behind - yaw));
+  const turn = difference * (1 - Math.exp(-2.8 * dt));
+  const limit = (Math.hypot(vx, vz) > 5 ? 2.5 : 2) * dt;
+  return yaw + Math.max(-limit, Math.min(limit, turn));
+}
