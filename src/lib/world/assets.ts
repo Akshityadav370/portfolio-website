@@ -1,3 +1,4 @@
+import { EXHIBITS } from "./exhibits";
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
@@ -828,6 +829,90 @@ export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
   }
   sign(root, "← GAMES   /   WORK →", 9.8, 2.8, 9, 4.5, 0.7);
   cylinder(root, 9.8, 1.2, 8.95, 0.08, 2.4, palette.dark);
+  // Hinged props stay separate from merged scenery so they can respond to the player.
+  const exhibitProps = EXHIBITS.map((exhibit) => {
+    const group = new THREE.Group();
+    group.position.set(exhibit.x, exhibit.y, exhibit.z - 0.65);
+    dynamic.add(group);
+    const tall = exhibit.kind === "locker" || exhibit.kind === "archive";
+    box(
+      group,
+      0,
+      tall ? 0.95 : 0.55,
+      0,
+      0.8,
+      tall ? 1.9 : 1.1,
+      0.5,
+      palette.dark,
+    );
+    const hinge = new THREE.Group();
+    hinge.position.set(tall ? -0.4 : 0, tall ? 0 : 1.1, tall ? 0.28 : -0.25);
+    group.add(hinge);
+    if (tall) {
+      box(hinge, 0.4, 0.95, 0, 0.8, 1.9, 0.06, palette.teal);
+      sphere(hinge, 0.68, 0.95, 0.07, 0.045, palette.yellow);
+      sign(
+        group,
+        exhibit.kind === "locker" ? "370" : String((exhibit.index ?? 0) + 1),
+        0,
+        1.1,
+        0.28,
+        0.5,
+        0.65,
+      );
+    } else if (exhibit.kind === "phone") {
+      box(hinge, 0, 0.13, 0.25, 0.65, 0.16, 0.2, palette.rose);
+      for (const x of [-0.25, 0.25])
+        sphere(hinge, x, 0.12, 0.25, 0.13, palette.black);
+    } else {
+      box(
+        hinge,
+        0,
+        0.035,
+        0.25,
+        0.85,
+        0.07,
+        0.55,
+        exhibit.kind === "screen" ? palette.black : palette.teal,
+      );
+      sign(
+        hinge,
+        exhibit.kind === "screen" ? "ONLINE" : "OPEN",
+        0,
+        0.08,
+        0.3,
+        0.6,
+        0.2,
+      ).mesh.rotation.x = -Math.PI / 2;
+    }
+    const label = sign(
+      group,
+      exhibit.label,
+      0,
+      tall ? 2.15 : 1.65,
+      0,
+      exhibit.kind === "archive" ? 1.8 : 2,
+      0.35,
+    );
+    const lampMaterial = new THREE.MeshBasicMaterial({ color: 0xff759e });
+    const lamp = sphere(group, 0, tall ? 2.5 : 2, 0, 0.08, lampMaterial);
+    const ring = new THREE.Mesh(
+      new THREE.RingGeometry(0.45, 0.53, 24),
+      new THREE.MeshBasicMaterial({ color: 0xff759e, side: THREE.DoubleSide }),
+    );
+    ring.rotation.x = -Math.PI / 2;
+    ring.position.set(0, 0.035, 0.65);
+    group.add(ring);
+    obstacles.push({
+      x: exhibit.x,
+      z: exhibit.z - 0.65,
+      w: 0.8,
+      d: 0.5,
+      bottom: exhibit.y,
+      top: exhibit.y + (tall ? 1.9 : 1.1),
+    });
+    return { exhibit, hinge, lamp, lampMaterial, label, ring, amount: 0 };
+  });
   // Merge static geometry by material to keep draw calls bounded.
   const cameraObstacles: Obstacle[] = [];
   function cameraBounds(object: THREE.Object3D) {
@@ -851,6 +936,18 @@ export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
     });
   }
   cameraBounds(root);
+  for (const { exhibit } of exhibitProps) {
+    cameraObstacles.push({
+      x: exhibit.x,
+      z: exhibit.z - 0.5,
+      w: 1.6,
+      d: 1.4,
+      bottom: exhibit.y,
+      top:
+        exhibit.y +
+        (exhibit.kind === "locker" || exhibit.kind === "archive" ? 2 : 1.6),
+    });
+  }
   const movingCameraObstacles: Obstacle[] = [];
   function updateMovingCameraObstacles() {
     movingCameraObstacles.length = 0;
@@ -998,6 +1095,30 @@ export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
   player.group.rotation.y = Math.PI;
   return {
     player,
+    updateExhibits(
+      active: string | null,
+      nearby: string | null,
+      dt: number,
+      reduced: boolean,
+    ) {
+      for (const prop of exhibitProps) {
+        const open = prop.exhibit.id === active;
+        prop.amount +=
+          ((open ? 1 : 0) - prop.amount) *
+          (reduced ? 1 : 1 - Math.exp(-dt * 8));
+        if (prop.exhibit.kind === "locker" || prop.exhibit.kind === "archive")
+          prop.hinge.rotation.y = -prop.amount * 1.7;
+        else if (prop.exhibit.kind === "phone") {
+          prop.hinge.position.y = 1.1 + prop.amount * 0.45;
+          prop.hinge.rotation.z = -prop.amount * 0.25;
+        } else prop.hinge.rotation.x = -prop.amount * 1.25;
+        prop.lampMaterial.color.setHex(
+          open ? 0x6dffc0 : prop.exhibit.id === nearby ? 0xffd17e : 0xff759e,
+        );
+        prop.ring.material.color.copy(prop.lampMaterial.color);
+        prop.ring.scale.setScalar(prop.exhibit.id === nearby ? 1.2 : 1);
+      }
+    },
     obstacles,
     cameraObstacles,
     updateMovingCameraObstacles,

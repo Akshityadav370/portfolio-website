@@ -1,4 +1,6 @@
 "use client";
+import { projectsForTools, EXHIBITS } from "@/lib/world/exhibits";
+import CopyEmailButton from "@/components/CopyEmailButton";
 import InvitationCard from "./InvitationCard";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
@@ -88,28 +90,30 @@ function Modal({
     </dialog>
   );
 }
-function Dossier({ zone }: { zone: ZoneId }) {
+function Dossier({ zone, index }: { zone: ZoneId; index?: number }) {
   if (zone === "career")
     return (
       <>
         <p className="world-kicker">02 / THE STAIRCASE</p>
         <h2>Every step counts.</h2>
-        {experience.map((job, i) => (
-          <article key={job.company} className="world-record">
-            <small>
-              LEVEL {experience.length - i} · {job.period}
-            </small>
-            <h3>{job.company}</h3>
-            <p className="world-accent">{job.role}</p>
-            <p>{job.summary}</p>
-            <ul>
-              {job.highlights.map((h) => (
-                <li key={h}>{h}</li>
-              ))}
-            </ul>
-            <p className="world-stack">{job.stack.join(" / ")}</p>
-          </article>
-        ))}
+        {experience
+          .filter((_, i) => index === undefined || i === index)
+          .map((job, i) => (
+            <article key={job.company} className="world-record">
+              <small>
+                LEVEL {experience.length - (index ?? i)} · {job.period}
+              </small>
+              <h3>{job.company}</h3>
+              <p className="world-accent">{job.role}</p>
+              <p>{job.summary}</p>
+              <ul>
+                {job.highlights.map((h) => (
+                  <li key={h}>{h}</li>
+                ))}
+              </ul>
+              <p className="world-stack">{job.stack.join(" / ")}</p>
+            </article>
+          ))}
         <article className="world-record">
           <h3>{education.degree}</h3>
           <p>
@@ -124,42 +128,44 @@ function Dossier({ zone }: { zone: ZoneId }) {
         <p className="world-kicker">03 / THE CONTROL ROOM</p>
         <h2>Behind the screens.</h2>
         <p>Open a feed to inspect the work.</p>
-        {projects.map((project, i) => (
-          <details className="world-record" key={project.name} open={i === 0}>
-            <summary>
-              <span>FEED 0{i + 1}</span>
-              <h3>{project.name}</h3>
-              <span>＋</span>
-            </summary>
-            <p>{project.description}</p>
-            <ul>
-              {project.highlights.map((h) => (
-                <li key={h}>{h}</li>
-              ))}
-            </ul>
-            <p className="world-stack">{project.stack.join(" / ")}</p>
-            <div className="world-link-row">
-              {project.github && (
-                <a
-                  href={project.github}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Explore source ↗
-                </a>
-              )}
-              {project.live && (
-                <a
-                  href={project.live}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Live project ↗
-                </a>
-              )}
-            </div>
-          </details>
-        ))}
+        {projects
+          .filter((_, i) => index === undefined || i === index)
+          .map((project, i) => (
+            <details className="world-record" key={project.name} open={i === 0}>
+              <summary>
+                <span>FEED 0{i + 1}</span>
+                <h3>{project.name}</h3>
+                <span>＋</span>
+              </summary>
+              <p>{project.description}</p>
+              <ul>
+                {project.highlights.map((h) => (
+                  <li key={h}>{h}</li>
+                ))}
+              </ul>
+              <p className="world-stack">{project.stack.join(" / ")}</p>
+              <div className="world-link-row">
+                {project.github && (
+                  <a
+                    href={project.github}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Explore source ↗
+                  </a>
+                )}
+                {project.live && (
+                  <a
+                    href={project.live}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Live project ↗
+                  </a>
+                )}
+              </div>
+            </details>
+          ))}
       </>
     );
   if (zone === "skills")
@@ -453,17 +459,123 @@ export default function WorldExperience() {
               </button>
             </nav>
           </header>
-          {!trial && (
+          {!trial && !snapshot?.exhibit && (
             <div className="world-objective">
               <span className="world-kicker">YOUR NEXT CHAPTER</span>
               <h1>Make yourself at home.</h1>
               <p>
-                Follow the pink markers. Discover the person behind the player.
+                Find the glowing objects. Press E to open, power on, or pick up.
               </p>
               <small>
                 {snapshot?.discovered.length ?? 0} / 8 PLACES DISCOVERED
               </small>
             </div>
+          )}
+          {!trial && snapshot?.exhibit && (
+            <section
+              className="world-exhibit-panel"
+              aria-label="Interactive exhibit"
+            >
+              <div className="world-exhibit-top">
+                <span>
+                  DISCOVERED {snapshot.explored} / {EXHIBITS.length}
+                </span>
+                <button
+                  onClick={() => runtime.current?.closeExhibit()}
+                  aria-label="Close exhibit"
+                >
+                  ×
+                </button>
+              </div>
+              <small>
+                {snapshot.exhibit.kind === "screen"
+                  ? "FEED ONLINE"
+                  : snapshot.exhibit.kind === "phone"
+                    ? "RECEIVER LIFTED"
+                    : "OPENED"}
+              </small>
+              <h2>{snapshot.exhibit.label}</h2>
+              <p>{snapshot.exhibit.text}</p>
+              {snapshot.exhibit.tools && (
+                <div className="world-exhibit-projects">
+                  <strong>Used in these projects</strong>
+                  {projectsForTools(snapshot.exhibit.tools).map((project) => (
+                    <a
+                      key={project.name}
+                      href={project.github}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {project.name} ↗
+                    </a>
+                  ))}
+                  {projectsForTools(snapshot.exhibit.tools).length === 0 && (
+                    <p>
+                      See the experience archive for work with this toolkit.
+                    </p>
+                  )}
+                </div>
+              )}
+              {snapshot.exhibit.kind === "screen" &&
+                snapshot.exhibit.index !== undefined && (
+                  <div className="world-link-row">
+                    <a
+                      href={projects[snapshot.exhibit.index].github}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Source code ↗
+                    </a>
+                    {projects[snapshot.exhibit.index].live && (
+                      <a
+                        href={projects[snapshot.exhibit.index].live}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Live demo ↗
+                      </a>
+                    )}
+                  </div>
+                )}
+              {snapshot.exhibit.kind === "phone" && (
+                <div className="world-link-row">
+                  <a href={`mailto:${profile.email}`}>Send an email ↗</a>
+                  <CopyEmailButton email={profile.email} />
+                </div>
+              )}
+              {snapshot.exhibit.kind === "dossier" && (
+                <div className="world-link-row">
+                  <a
+                    href={profile.resumeUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Open résumé ↗
+                  </a>
+                  <a
+                    href={profile.linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    LinkedIn ↗
+                  </a>
+                  <a
+                    href={profile.github}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    GitHub ↗
+                  </a>
+                </div>
+              )}
+              <button
+                className="world-primary"
+                onClick={() => runtime.current?.inspectExhibit()}
+              >
+                Read more <kbd>F</kbd>
+              </button>
+              <small>Walk away to close · E toggles the object</small>
+            </section>
           )}
           {trial && (
             <section
@@ -800,7 +912,14 @@ export default function WorldExperience() {
           title={ZONES.find((z) => z.id === selected)?.name ?? "Player file"}
           close={enter}
         >
-          <Dossier zone={selected} />
+          <Dossier
+            zone={selected}
+            index={
+              snapshot?.exhibit?.zone === selected
+                ? snapshot.exhibit.index
+                : undefined
+            }
+          />
         </Modal>
       )}
       {screen === "briefing" && game && !failed && (

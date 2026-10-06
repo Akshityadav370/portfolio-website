@@ -1113,3 +1113,77 @@
 .world-brand {
   flex-shrink: 0;
 }
+
+.world-exhibit-panel {
+  position: absolute;
+  left: 28px;
+  top: 125px;
+  width: 340px;
+  max-height: calc(100dvh - 220px);
+  overflow: auto;
+  padding: 20px;
+  background: #153d35f5;
+  border-top: 3px solid #72e7b1;
+  box-shadow: 0 12px 35px #0c282e35;
+}
+.world-exhibit-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  letter-spacing: 1px;
+  margin-bottom: 16px;
+}
+.world-exhibit-top button {
+  background: transparent;
+  border: 0;
+  font-size: 25px;
+  padding: 0 8px;
+}
+.world-exhibit-panel h2 {
+  font-size: 24px;
+  line-height: 1.2;
+  margin: 9px 0 14px;
+}
+.world-exhibit-panel p {
+  font-size: 15px;
+  line-height: 1.65;
+  color: #d6e4d0;
+}
+.world-exhibit-panel small {
+  display: block;
+  font-size: 12px;
+  color: #97d5b1;
+}
+.world-exhibit-panel .world-primary {
+  margin: 18px 0 14px;
+  width: 100%;
+}
+.world-exhibit-panel .world-link-row {
+  margin-top: 15px;
+}
+.world-exhibit-panel a {
+  color: #b8ffce;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.world-exhibit-projects {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin-top: 18px;
+  font-size: 14px;
+}
+@media (max-width: 700px) {
+  .world-exhibit-panel {
+    top: auto;
+    bottom: 145px;
+    left: 15px;
+    width: min(340px, calc(100% - 30px));
+    max-height: 42dvh;
+    padding: 16px;
+  }
+  .world-exhibit-panel ~ .world-map-button {
+    display: none;
+  }
+}

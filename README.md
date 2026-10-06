@@ -79,3 +79,7 @@ Desktop camera look follows mouse movement without holding a button. Click the w
 Jump Rope now checks the animated rope against the player capsule throughout its swing, including movement between physics ticks. Missing a marker repeats the pass without elimination or progress; only rope contact ends an attempt (no timeout). Mingle has large camera-facing numbers above each room, highlights the called room, and sends two guards toward an eliminated player before firing.
 
 The entry invitation offers the 3D world or the original `/portfolio` page. A falling card and moving symbols play on the first visit; repeat visits skip the animation, and reduced-motion settings disable it. The SPA retains its original design, theme switcher, terminal, and content, without Squid Game styling. The selected next scene concepts are documented in `docs/world-section-concepts.md`.
+
+## Interactive portfolio objects
+
+Sixteen objects across the five portfolio areas respond to E or the mobile interaction button: a player locker, four company archives along the stairs, five project consoles, four equipment cases, and a contact phone/résumé dossier. Hinges, receivers, lights, and proximity rings respond in the world. A live panel shows the selected content and relevant project/contact links; F opens the full record. E toggles the object, walking away closes it, and the panel counts objects explored this visit. The original SPA is unchanged.

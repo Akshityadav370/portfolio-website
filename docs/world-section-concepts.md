@@ -21,3 +21,7 @@ A calmer final room with an exit toward daylight. A desk phone opens the email a
 3. Departure lounge: finish with clear contact actions and a visible return route.
 
 The current iteration implements the first-visit invitation animation and the two entry choices, and restores the original Mac/IDE portfolio at /portfolio per the owner’s follow-up. The three scenes above await the next implementation step.
+
+## First interactive pass
+
+Implemented physical company archive doors along the existing career stairs, equipment cases with project matches, a contact phone and résumé dossier, plus dormitory locker and project consoles. E toggles each prop in the live world; F inspects its record. The larger architectural corridor/lounge redesign above remains a future refinement.

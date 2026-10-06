@@ -1,3 +1,4 @@
+import { EXHIBITS, nearestExhibit, type Exhibit } from "./exhibits";
 import * as THREE from "three";
 import {
   cameraClearance,
@@ -40,6 +41,8 @@ export type Snapshot = {
   discovered: ZoneId[];
   trial: SpatialTrial | null;
   elimination: number;
+  exhibit: Exhibit | null;
+  explored: number;
 };
 export function createWorld(
   host: HTMLDivElement,
@@ -52,6 +55,10 @@ export function createWorld(
   },
 ) {
   let renderNeeded = true;
+  let activeExhibit: string | null = null;
+  let objectNearby: Exhibit | null = null;
+  let exhibitUnlock = false;
+  const explored = new Set<string>();
   let disposed = false,
     paused = true,
     hidden = false,
@@ -158,6 +165,7 @@ export function createWorld(
     }
   }
   function teleport(id: ZoneId) {
+    activeExhibit = null;
     const zone = ZONES.find((z) => z.id === id)!;
     body = {
       ...zone.spawn,
@@ -184,7 +192,22 @@ export function createWorld(
     publish();
   }
   function interact() {
-    if (!paused && !trial && nearest) callbacks.interact(nearest.zone);
+    if (paused || trial) return;
+    objectNearby = nearestExhibit(body);
+    if (objectNearby) {
+      activeExhibit =
+        activeExhibit === objectNearby.id ? null : objectNearby.id;
+      if (activeExhibit) explored.add(activeExhibit);
+      keys.clear();
+      joystick = { x: 0, y: 0 };
+      exhibitUnlock = document.pointerLockElement === host;
+      releasePointer();
+      publish();
+    } else if (nearest) callbacks.interact(nearest.zone);
+  }
+  function inspectExhibit() {
+    const exhibit = EXHIBITS.find((e) => e.id === activeExhibit);
+    if (exhibit) callbacks.interact(exhibit.zone);
   }
   function resize() {
     renderNeeded = true;
@@ -211,6 +234,7 @@ export function createWorld(
         "Space",
         "KeyE",
         "KeyC",
+        "KeyF",
         "ShiftLeft",
         "ShiftRight",
       ].includes(e.code)
@@ -220,6 +244,7 @@ export function createWorld(
       if (e.code === "Space" && !e.repeat) jumpRequested = true;
       if (e.code === "KeyE" && !e.repeat) interact();
       if (e.code === "KeyC" && !e.repeat) recenter();
+      if (e.code === "KeyF" && !e.repeat && activeExhibit) inspectExhibit();
     }
   };
   const keyup = (e: KeyboardEvent) => keys.delete(e.code);
@@ -231,6 +256,10 @@ export function createWorld(
     const wasLocked = pointerLocked;
     pointerLocked = document.pointerLockElement === host;
     if (pointerLocked && (paused || disposed)) releasePointer();
+    if (wasLocked && !pointerLocked && exhibitUnlock) {
+      exhibitUnlock = false;
+      return;
+    }
     if (wasLocked && !pointerLocked && !paused && !disposed) blur();
   };
   const down = (e: PointerEvent) => {
@@ -318,7 +347,12 @@ export function createWorld(
       (a, b) => distance(body, a) - distance(body, b),
     )[0];
     if (distance(body, zone) < 10) discovered.add(zone.id);
+    objectNearby = !trial ? nearestExhibit(body) : null;
+    const active = EXHIBITS.find((e) => e.id === activeExhibit);
+    if (active && Math.hypot(body.x - active.x, body.z - active.z) > 4.5)
+      activeExhibit = null;
     nearest =
+      objectNearby ??
       POIS.find((p) => distance(body, p) < 3.1 && Math.abs(body.y - p.y) < 2) ??
       null;
     callbacks.update({
@@ -330,6 +364,8 @@ export function createWorld(
       discovered: [...discovered],
       trial: trial ? { ...trial } : null,
       elimination,
+      exhibit: EXHIBITS.find((e) => e.id === activeExhibit) ?? null,
+      explored: explored.size,
     });
   }
   let previous = performance.now(),
@@ -676,6 +712,12 @@ export function createWorld(
       material.transparent = fade < 1;
       material.depthWrite = fade > 0.5;
     }
+    world.updateExhibits(
+      activeExhibit,
+      objectNearby?.id ?? null,
+      dt,
+      reducedMotion,
+    );
     renderer.render(scene, camera);
     if (now - lastPublish > 100) {
       publish();
@@ -688,6 +730,12 @@ export function createWorld(
   return {
     teleport,
     interact,
+    inspectExhibit,
+    closeExhibit() {
+      activeExhibit = null;
+      publish();
+      host.focus({ preventScroll: true });
+    },
     recenter,
     setCameraFollow(value: boolean) {
       followCamera = value;
@@ -721,6 +769,7 @@ export function createWorld(
       if (!value) host.focus({ preventScroll: true });
     },
     startGame(kind: GameId) {
+      activeExhibit = null;
       elimination = -1;
       trial = startSpatialTrial(
         kind,
