@@ -931,7 +931,26 @@ export default function WorldExperience() {
                 The exploration soundtrack is an original ambient composition.
                 The textured boulder is a CC0 asset from Poly Haven.
               </p>
+              <p>
+                Tommy Vercetti model by jak218984, adapted with animation
+                changes, under{" "}
+                <a
+                  href="https://creativecommons.org/licenses/by/4.0/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  CC BY 4.0
+                </a>
+                .
+              </p>
               <div className="world-link-row">
+                <a
+                  href="https://sketchfab.com/3d-models/tommy-vercetti-7316bd1cee854c31b55121b66b97045f"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Character credit · jak218984 ↗
+                </a>
                 <a
                   href="https://polyhaven.com/a/boulder_01"
                   target="_blank"

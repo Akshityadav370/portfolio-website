@@ -1,4 +1,5 @@
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+import { createPlayerAvatar } from "./player-avatar";
 import { EXHIBITS } from "./exhibits";
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
@@ -1172,7 +1173,41 @@ export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
         /* Core world does not depend on decorative assets. */
       }),
     );
-  const player = character(dynamic, 0, 7);
+  const fallback = character(dynamic, 0, 7);
+  // Keep the controller group stable while the visual loads asynchronously.
+  const group = new THREE.Group();
+  group.position.copy(fallback.group.position);
+  fallback.group.position.set(0, 0, 0);
+  group.add(fallback.group);
+  dynamic.add(group);
+  let avatar: ReturnType<typeof createPlayerAvatar> | undefined;
+  const player = {
+    group,
+    animate: (...args: Parameters<typeof fallback.animate>) =>
+      (avatar ?? fallback).animate(...args),
+    dispose: () => avatar?.dispose(),
+  };
+  assetPromises.push(
+    new GLTFLoader()
+      .loadAsync("/models/tommy_vercetti.glb")
+      .then((gltf) => {
+        if (isDisposed()) {
+          disposeObject(gltf.scene);
+          return;
+        }
+        try {
+          avatar = createPlayerAvatar(gltf);
+          fallback.group.visible = false;
+          group.add(avatar.visual);
+        } catch (error) {
+          disposeObject(gltf.scene);
+          throw error;
+        }
+      })
+      .catch((error) =>
+        console.warn("Could not load Tommy; using the original player.", error),
+      ),
+  );
   player.group.rotation.y = Math.PI;
   return {
     player,
