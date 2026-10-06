@@ -35,7 +35,7 @@ Games pause with menus, window blur, and hidden tabs. Music and synthesized gunf
 
 ## Automatic third-person camera
 
-The camera now settles behind the direction of travel, pans through turns at a bounded rate, and frames a little more of the path ahead. Running slightly widens outdoor framing; interiors keep their closer view. Manual dragging has priority and delays automatic follow for 1.6 seconds. While idle, your chosen angle stays put. C / ↺ still recenters immediately, and the pause menu can switch to manual orbit.
+The camera now settles behind the direction of travel, pans through turns at a bounded rate, and frames a little more of the path ahead. Running slightly widens outdoor framing; interiors keep their closer view. Manual mouse movement (touch dragging) has priority and delays automatic follow for 1.6 seconds. While idle, your chosen angle stays put. C / ↺ still recenters immediately, and the pause menu can switch to manual orbit.
 
 A held movement gesture keeps its world heading while the camera pans. Releasing or deliberately changing direction captures the current camera-relative heading, preventing the auto-follow feedback loop that would otherwise make a held side direction run in circles. Small joystick jitter does not reset that heading. Reduced-motion preferences disable the extra look-ahead and speed-based widening.
 
@@ -73,3 +73,5 @@ npm run build
 The test runner transpiles only the dependency-free rules module using the existing TypeScript dependency, so it runs on Node 20 without adding a test framework. The production export is written to `out/`. Existing Vercel hosting settings are unchanged.
 
 Red Light now has paired red/green traffic lights beside the doll. Green lasts 1–2 seconds; the red lamp starts a 0.85–1.05-second turn before movement checks begin. The 45-second deadline and manual stopping remain. Guards raise and recoil their rifles; bullets travel to the player before a brief blood-particle impact and collapse. Reduced motion suppresses flashes and projectile/impact particles.
+
+Desktop camera look follows mouse movement without holding a button. Click the world to capture the pointer for continuous turning; Escape releases it and pauses. Menus, blur, and disposal release capture. Touch devices retain drag-to-look. Manual look also updates the movement heading while a direction is held.

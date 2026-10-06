@@ -100,7 +100,7 @@ export function createWorld(
   renderer.toneMappingExposure = 1.1;
   renderer.domElement.setAttribute(
     "aria-label",
-    "Third-person portfolio world. Use WASD to walk, drag to look, Space to jump, and E to interact.",
+    "Third-person portfolio world. Use WASD to walk, move the mouse to look, click the world for continuous mouse look, Escape to release the cursor, Space to jump, and E to interact.",
   );
   host.append(renderer.domElement);
   host.tabIndex = 0;
@@ -221,10 +221,30 @@ export function createWorld(
     }
   };
   const keyup = (e: KeyboardEvent) => keys.delete(e.code);
+  let pointerLocked = false;
+  function releasePointer() {
+    if (document.pointerLockElement === host) document.exitPointerLock();
+  }
+  const lockChanged = () => {
+    const wasLocked = pointerLocked;
+    pointerLocked = document.pointerLockElement === host;
+    if (pointerLocked && (paused || disposed)) releasePointer();
+    if (wasLocked && !pointerLocked && !paused && !disposed) blur();
+  };
   const down = (e: PointerEvent) => {
     if (paused || activePointer !== null || e.button !== 0) return;
-    activePointer = e.pointerId;
     host.focus({ preventScroll: true });
+    if (e.pointerType === "mouse") {
+      // A browser requires a click before it can capture unlimited mouse motion.
+      try {
+        const request = host.requestPointerLock?.();
+        request?.catch(() => {}); // Hover look remains available if capture is denied.
+      } catch {
+        /* Pointer lock is optional on embedded/unsupported browsers. */
+      }
+      return;
+    }
+    activePointer = e.pointerId;
     drag = true;
     chase.hold = 1.6;
     lastX = e.clientX;
@@ -232,14 +252,15 @@ export function createWorld(
     host.setPointerCapture(e.pointerId);
   };
   const move = (e: PointerEvent) => {
-    if (!drag || paused || e.pointerId !== activePointer) return;
+    if (paused || hidden) return;
+    const mouse = e.pointerType === "mouse";
+    if (!mouse && (!drag || e.pointerId !== activePointer)) return;
+    const dx = mouse ? e.movementX : e.clientX - lastX;
+    const dy = mouse ? e.movementY : e.clientY - lastY;
+    if (!dx && !dy) return;
     chase.hold = 1.6;
-    wantedYaw -= (e.clientX - lastX) * 0.005 * sensitivity;
-    wantedPitch = clamp(
-      wantedPitch + (e.clientY - lastY) * 0.004 * sensitivity,
-      0.08,
-      1.15,
-    );
+    wantedYaw -= dx * 0.005 * sensitivity;
+    wantedPitch = clamp(wantedPitch + dy * 0.004 * sensitivity, 0.08, 1.15);
     lastX = e.clientX;
     lastY = e.clientY;
   };
@@ -264,6 +285,7 @@ export function createWorld(
     joystick = { x: 0, y: 0 };
     drag = false;
     activePointer = null;
+    releasePointer();
     if (!paused) callbacks.pause();
   };
   const visibility = () => {
@@ -279,6 +301,7 @@ export function createWorld(
   };
   host.addEventListener("keydown", keydown);
   window.addEventListener("keyup", keyup);
+  document.addEventListener("pointerlockchange", lockChanged);
   host.addEventListener("pointerdown", down);
   host.addEventListener("pointermove", move);
   host.addEventListener("pointerup", up);
@@ -337,6 +360,7 @@ export function createWorld(
         z = 0;
       }
       movementFrame = movementReference(movementFrame, yaw, x, z);
+      if (chase.hold > 0) movementFrame.yaw = yaw;
       const controlYaw = followCamera ? movementFrame.yaw : yaw;
       const speed =
         trial?.kind === "red-light"
@@ -660,6 +684,7 @@ export function createWorld(
     },
     setPaused(value: boolean) {
       paused = value;
+      if (value) releasePointer();
       renderNeeded = true;
       keys.clear();
       movementFrame = { yaw, x: 0, z: 0 };
@@ -728,6 +753,8 @@ export function createWorld(
     },
     dispose() {
       disposed = true;
+      releasePointer();
+      document.removeEventListener("pointerlockchange", lockChanged);
       cancelAnimationFrame(frame);
       observer.disconnect();
       audio.dispose();

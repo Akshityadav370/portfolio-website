@@ -544,7 +544,7 @@ export default function WorldExperience() {
               <kbd>W A S D</kbd> Walk
             </span>
             <span>
-              <kbd>DRAG</kbd> Look
+              <kbd>MOUSE</kbd> Look · Click to capture
             </span>
             <span>
               <kbd>SPACE</kbd> Jump
@@ -634,7 +634,7 @@ export default function WorldExperience() {
                   <a href="/portfolio">Just show me the work</a>
                 </div>
                 <small>
-                  WASD TO WALK · DRAG TO LOOK · E TO INTERACT
+                  WASD TO WALK · MOUSE TO LOOK · E TO INTERACT
                   <br />
                   Touch controls available on mobile
                 </small>
@@ -747,12 +747,13 @@ export default function WorldExperience() {
             <a href="/portfolio">Read the full portfolio ↗</a>
           </div>
           <p className="world-help">
-            The camera settles behind you as you move. Drag to look around;
-            automatic follow resumes after a short delay. Hold a direction to
-            keep your course while the camera turns.
+            Move your mouse to look around. Click the world to capture the
+            cursor for continuous turning; Escape releases it and pauses. Touch
+            players can drag the world to look. Automatic follow resumes after a
+            short delay.
           </p>
           <p className="world-help">
-            WASD / arrows to walk · Drag to look · Scroll to zoom · Space to
+            WASD / arrows to walk · Mouse to look · Scroll to zoom · Space to
             jump · Shift to run · E to interact · C to recenter camera · M for
             map · Esc to pause
           </p>
