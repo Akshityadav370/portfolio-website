@@ -18,6 +18,8 @@ const {
   startSpatialTrial,
   stepSpatialTrial,
   ropeZ,
+  ropeAngle,
+  ropeTouchesPlayer,
   createMotion,
   stepMotion,
   advancePhysics,
@@ -104,7 +106,7 @@ test("mingle requires entering the correct physical room in each round", () => {
   );
   assert.equal(wrong.status, "lost");
 });
-test("rope requires both checkpoint position and an airborne player", () => {
+test("rope contact eliminates, while missing a marker safely repeats the pass", () => {
   let s = startSpatialTrial("jump-rope");
   assert.equal(
     stepSpatialTrial({ ...s, elapsed: 3.59 }, 0.02, body(0, 42), 0).status,
@@ -112,7 +114,7 @@ test("rope requires both checkpoint position and an airborne player", () => {
   );
   assert.equal(
     stepSpatialTrial({ ...s, elapsed: 3.59 }, 0.02, body(0, 44, 3), 0).status,
-    "lost",
+    "playing",
   );
   for (let i = 0; i < 5; i++) {
     s = stepSpatialTrial(
@@ -452,4 +454,58 @@ test("doll deadline is 45 seconds and red detects even slow creeping", () => {
       .status,
     "lost",
   );
+});
+
+test("rope collision follows its swing and the player capsule, not a countdown", () => {
+  assert.equal(ropeTouchesPlayer(body(0, 42), 0, 0), true);
+  assert.equal(ropeTouchesPlayer(body(0, 42, 3), 0, 0), false);
+  assert.equal(ropeTouchesPlayer(body(0, 42), 0, Math.PI), false);
+  assert.equal(ropeTouchesPlayer(body(0, 43.37), 0, -Math.PI / 2), true);
+  const state = { ...startSpatialTrial("jump-rope"), elapsed: 2.69 };
+  assert.equal(stepSpatialTrial(state, 0.02, body(0, 43.37), 0).status, "lost");
+  assert.equal(ropeAngle(3.6, 3.6), 0);
+});
+test("waiting away from the rope never ends or advances the round, even after 65 seconds", () => {
+  let state = startSpatialTrial("jump-rope");
+  for (let i = 0; i < 70 * 120; i++) {
+    state = stepSpatialTrial(state, 1 / 120, body(0, 45), 0);
+  }
+  assert.equal(state.status, "playing");
+  assert.equal(state.round, 0);
+  assert(state.nextCrossing > state.elapsed);
+});
+test("rope catches swept player motion between two otherwise clear endpoints", () => {
+  const state = { ...startSpatialTrial("jump-rope"), elapsed: 3.59 };
+  assert.equal(
+    stepSpatialTrial(state, 0.02, body(0, 41), 2, body(0, 43)).status,
+    "lost",
+  );
+});
+
+test("a normal motor jump can clear the rotating rope", () => {
+  let state = { ...startSpatialTrial("jump-rope"), elapsed: 1.8 };
+  let p = body(0, 42),
+    motion = createMotion(),
+    jumped = false;
+  while (
+    state.elapsed < 3.7 &&
+    state.status === "playing" &&
+    state.round === 0
+  ) {
+    const jump = !jumped && state.elapsed >= 3.2;
+    if (jump) jumped = true;
+    const old = p;
+    const result = stepMotion(
+      p,
+      motion,
+      { x: 0, z: 0, speed: 4.5, jump },
+      1 / 120,
+      [],
+    );
+    p = result.body;
+    motion = result.motion;
+    state = stepSpatialTrial(state, 1 / 120, p, Math.abs(p.y - old.y), old);
+  }
+  assert.equal(state.status, "playing");
+  assert.equal(state.round, 1);
 });

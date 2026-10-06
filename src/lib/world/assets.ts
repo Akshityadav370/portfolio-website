@@ -1,7 +1,15 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
-import { MINGLE_ROOMS, POIS, type Obstacle } from "./rules";
+import {
+  MINGLE_ROOMS,
+  POIS,
+  ropeSag,
+  ROPE_RADIUS,
+  eliminationDelay,
+  type GameId,
+  type Obstacle,
+} from "./rules";
 
 export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
   const root = new THREE.Group();
@@ -455,8 +463,13 @@ export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
       });
     }
   }
-  const armedGuards = [-36, -20].map((x) => {
-    const guard = character(dynamic, x, -36, true);
+  const armedGuards = [
+    { x: -36, z: -36, kind: "red-light" },
+    { x: -20, z: -36, kind: "red-light" },
+    { x: -32, z: 26, kind: "mingle" },
+    { x: -24, z: 26, kind: "mingle" },
+  ].map((home) => {
+    const guard = character(dynamic, home.x, home.z, true);
     const rifle = new THREE.Group();
     rifle.position.set(0.15, 1.18, 0.2);
     guard.group.add(rifle);
@@ -520,6 +533,8 @@ export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
       };
     });
     return {
+      home,
+      animate: guard.animate,
       guard: guard.group,
       arms: guard.arms,
       rifle,
@@ -538,6 +553,7 @@ export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
     target: THREE.Vector3,
     time: number,
     reduced: boolean,
+    kind?: GameId,
   ) {
     for (let i = 0; i < armedGuards.length; i++) {
       const shot = armedGuards[i];
@@ -554,11 +570,35 @@ export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
         origin,
         impact,
       } = shot;
-      const age = time - [0.16, 0.62][i];
-      const firing = time >= 0 && age >= 0 && age < 0.18;
-      const raise = time < 0 ? 0 : THREE.MathUtils.smoothstep(time, 0, 0.16);
+      const activeTime = shot.home.kind === kind ? time : -1;
+      const index = i % 2;
+      const delay = eliminationDelay(kind);
+      const age = activeTime - delay - [0.16, 0.62][index];
+      if (shot.home.kind === "mingle" && activeTime >= 0) {
+        const room = MINGLE_ROOMS.find(
+          (r) => Math.hypot(target.x - r.x, target.z - r.z) < 1.8,
+        );
+        const startX = (room?.x ?? target.x) + (index === 0 ? -0.7 : 0.7);
+        const startZ = room ? room.z + 2.5 : target.z + 3.5;
+        const progress = THREE.MathUtils.smoothstep(activeTime, 0, delay);
+        guard.position.set(
+          startX +
+            (target.x + (index === 0 ? -0.65 : 0.65) - startX) * progress,
+          target.y,
+          startZ + (target.z + 1.2 - startZ) * progress,
+        );
+        shot.animate(activeTime, activeTime < delay, false);
+      } else {
+        guard.position.set(shot.home.x, 0, shot.home.z);
+        shot.animate(0, false, false);
+      }
+      const firing = activeTime >= 0 && age >= 0 && age < 0.18;
+      const raise =
+        activeTime < 0
+          ? 0
+          : THREE.MathUtils.smoothstep(activeTime - delay, 0, 0.16);
       guard.rotation.y =
-        time >= 0
+        activeTime >= 0
           ? Math.atan2(target.x - guard.position.x, target.z - guard.position.z)
           : 0;
       arms.forEach((arm, j) => {
@@ -574,10 +614,10 @@ export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
         guard.updateMatrixWorld(true);
         muzzle.getWorldPosition(origin);
         // Aim the second shot lower as the avatar falls.
-        impact.set(target.x, target.y + (i === 0 ? 1 : 0.55), target.z);
+        impact.set(target.x, target.y + (index === 0 ? 1 : 0.55), target.z);
       }
       flash.visible = firing && age < 0.08 && !reduced;
-      const flight = age >= 0 && age < 0.12 && time >= 0;
+      const flight = age >= 0 && age < 0.12 && activeTime >= 0;
       tracer.visible = bullet.visible = flight && !reduced;
       if (flight) {
         const fraction = THREE.MathUtils.clamp(age / 0.12, 0, 1);
@@ -602,7 +642,8 @@ export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
       const hitAge = age - 0.12;
       bloodMaterial.opacity = Math.max(0, 1 - hitAge / 0.55);
       for (const { mesh, velocity } of blood) {
-        mesh.visible = time >= 0 && hitAge >= 0 && hitAge < 0.55 && !reduced;
+        mesh.visible =
+          activeTime >= 0 && hitAge >= 0 && hitAge < 0.55 && !reduced;
         if (mesh.visible) {
           mesh.position.copy(impact).addScaledVector(velocity, hitAge);
           mesh.position.y = Math.max(
@@ -622,13 +663,13 @@ export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
   carousel.position.set(-28, 0, 15);
   dynamic.add(carousel);
   cylinder(carousel, 0, 0.16, 0, 5.8, 0.12, palette.mint);
-  cylinder(carousel, 0, 2.1, 0, 0.17, 4.2, palette.cream);
-  obstacles.push({ x: -28, z: 15, w: 0.4, d: 0.4, bottom: 0, top: 4.2 });
+  cylinder(carousel, 0, 3.6, 0, 0.17, 7.2, palette.cream);
+  obstacles.push({ x: -28, z: 15, w: 0.4, d: 0.4, bottom: 0, top: 7.2 });
   const canopy = new THREE.Mesh(
     new THREE.ConeGeometry(4.7, 1.6, 12),
     palette.rose,
   );
-  canopy.position.y = 4.8;
+  canopy.position.y = 7.3;
   root.add(canopy);
   canopy.position.x = -28;
   canopy.position.z = 15;
@@ -637,14 +678,38 @@ export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
     cylinder(
       carousel,
       Math.sin(a) * 4.8,
-      1.8,
+      3.3,
       Math.cos(a) * 4.8,
       0.055,
-      3.6,
+      6.6,
       palette.cream,
     );
   }
+  const roomMarkers: { sprite: THREE.Sprite; count: number }[] = [];
   for (const room of MINGLE_ROOMS) {
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = 256;
+    const ctx = canvas.getContext("2d")!;
+    ctx.fillStyle = "#203731";
+    ctx.fillRect(0, 0, 256, 256);
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 10;
+    ctx.strokeRect(8, 8, 240, 240);
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 190px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(String(room.count), 128, 142);
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.colorSpace = THREE.SRGBColorSpace;
+    textures.push(texture);
+    const sprite = new THREE.Sprite(
+      new THREE.SpriteMaterial({ map: texture, toneMapped: false }),
+    );
+    sprite.position.set(room.x, 5.5, room.z);
+    sprite.scale.set(2, 2, 1);
+    dynamic.add(sprite);
+    roomMarkers.push({ sprite, count: room.count });
     box(root, room.x, 2, room.z - 1.8, 4, 4, 0.3, palette.blue, true);
     for (const dx of [-2, 2])
       box(root, room.x + dx, 2, room.z, 0.25, 4, 3.7, palette.mint, true);
@@ -697,15 +762,12 @@ export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
   ropeRig.add(rope);
   tube(
     rope,
-    [
-      [-3.3, 0, 0],
-      [-1.5, -1.2, 0],
-      [0, -1.37, 0],
-      [1.5, -1.2, 0],
-      [3.3, 0, 0],
-    ],
+    Array.from({ length: 41 }, (_, i) => {
+      const x = -3.3 + (6.6 * i) / 40;
+      return [x, ropeSag(x), 0];
+    }),
     palette.yellow,
-    0.065,
+    ROPE_RADIUS,
   );
   const marker = new THREE.Mesh(
     new THREE.RingGeometry(0.6, 1.0, 32),
@@ -940,6 +1002,13 @@ export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
     redSignal,
     redTimer,
     updateElimination,
+    updateRoomMarkers(target: number | null) {
+      for (const { sprite, count } of roomMarkers) {
+        const selected = count === target;
+        sprite.material.color.setHex(selected ? 0x65ff9c : 0xffffff);
+        sprite.scale.setScalar(selected ? 2.4 : 2);
+      }
+    },
     updateTrafficLights,
     carousel,
     rope,

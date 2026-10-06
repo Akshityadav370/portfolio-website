@@ -20,6 +20,8 @@ import {
   stepMotion,
   POIS,
   ropeZ,
+  ropeAngle,
+  eliminationDelay,
   startSpatialTrial,
   RED_LIGHT_TIME_LIMIT,
   stepSpatialTrial,
@@ -272,7 +274,8 @@ export function createWorld(
   };
   function recenter() {
     wantedYaw = world.player.group.rotation.y - Math.PI;
-    wantedPitch = trial?.kind === "red-light" ? 0.2 : 0.39;
+    wantedPitch =
+      trial?.kind === "red-light" || trial?.kind === "mingle" ? 0.2 : 0.39;
     chase = { hold: 0.6, moving: 0 };
     renderNeeded = true;
   }
@@ -339,7 +342,9 @@ export function createWorld(
       if (elimination >= 0) {
         const before = elimination;
         elimination += dt;
-        for (const at of [0.16, 0.62])
+        for (const at of [0.16, 0.62].map(
+          (t) => t + eliminationDelay(trial?.kind),
+        ))
           if (before < at && elimination >= at) audio.shot();
       }
       let x =
@@ -445,9 +450,10 @@ export function createWorld(
           dt,
           body,
           moved + Math.abs(body.y - old.y),
+          old,
         );
         if (
-          trial.kind === "red-light" &&
+          (trial.kind === "red-light" || trial.kind === "mingle") &&
           previousStatus === "playing" &&
           trial.status === "lost"
         )
@@ -490,7 +496,7 @@ export function createWorld(
       const travelPitch =
         trial?.kind === "jump-rope"
           ? 0.48
-          : trial?.kind === "red-light"
+          : trial?.kind === "red-light" || trial?.kind === "mingle"
             ? 0.2
             : 0.36;
       wantedPitch = damp(wantedPitch, travelPitch, 1.8, dt);
@@ -543,13 +549,29 @@ export function createWorld(
       1 + landing * 0.2,
     );
     if (elimination >= 0) {
-      const collapse = THREE.MathUtils.smoothstep(elimination, 0.28, 1.13);
+      const collapse = THREE.MathUtils.smoothstep(
+        elimination - eliminationDelay(trial?.kind),
+        0.28,
+        1.13,
+      );
       world.player.group.rotation.x = 0;
       world.player.group.rotation.z = (-Math.PI / 2) * collapse;
       world.player.group.position.y = visualPosition.y + 0.05 + 0.22 * collapse;
       world.player.group.scale.setScalar(1);
     }
-    world.updateElimination(visualPosition, elimination, reducedMotion);
+    world.updateElimination(
+      visualPosition,
+      elimination,
+      reducedMotion,
+      trial?.kind,
+    );
+    world.updateRoomMarkers(
+      trial?.kind === "mingle" &&
+        trial.phase === "choose" &&
+        trial.status === "playing"
+        ? trial.target
+        : null,
+    );
     const red =
       trial?.kind === "red-light"
         ? trial.status === "lost"
@@ -588,8 +610,7 @@ export function createWorld(
     }
     if (trial?.kind === "jump-rope") {
       world.ropeRig.position.z = ropeZ(Math.min(trial.round, 4));
-      world.rope.rotation.x =
-        (-(trial.nextCrossing - trial.elapsed) / 3.6) * Math.PI * 2;
+      world.rope.rotation.x = ropeAngle(trial.elapsed, trial.nextCrossing);
     }
     // Smooth the vertical follow over stairs without letting the pivot sink into the terrain.
     targetHeight = cameraFirst
@@ -716,8 +737,7 @@ export function createWorld(
       movementFrame = { yaw, x: 0, z: 0 };
       chase = { hold: 0, moving: 0 };
       leadX = leadZ = 0;
-      wantedPitch =
-        kind === "jump-rope" ? 0.48 : kind === "red-light" ? 0.2 : 0.39;
+      wantedPitch = kind === "jump-rope" ? 0.48 : 0.2;
       motion = createMotion();
       accumulator = 0;
       previousBody = { ...body };
@@ -728,6 +748,10 @@ export function createWorld(
       publish();
     },
     leaveGame() {
+      if (trial) {
+        teleport(trial.kind);
+        return;
+      }
       trial = null;
       elimination = -1;
       syncSound();

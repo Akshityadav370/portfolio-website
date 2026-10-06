@@ -518,11 +518,43 @@ export function startSpatialTrial(kind: GameId, seed = 0x370): SpatialTrial {
 export function ropeZ(round: number) {
   return 42 - round * 3;
 }
+export const ROPE_PERIOD = 3.6;
+export const ROPE_RADIUS = 0.065;
+export function ropeSag(x: number) {
+  return -1.37 * (1 - (x / 3.3) ** 2);
+}
+export function ropeAngle(elapsed: number, crossing: number) {
+  return ((elapsed - crossing) / ROPE_PERIOD) * Math.PI * 2;
+}
+export function eliminationDelay(kind?: GameId) {
+  return kind === "mingle" ? 1.4 : 0;
+}
+/** Sample the same rope curve used by the renderer against the player's vertical capsule. */
+export function ropeTouchesPlayer(body: Body, round: number, angle: number) {
+  for (let i = 0; i <= 80; i++) {
+    const x = -3.3 + (6.6 * i) / 80;
+    const sag = ropeSag(x);
+    const y = 3.4 + sag * Math.cos(angle);
+    const z = ropeZ(round) + sag * Math.sin(angle);
+    const nearestY = clamp(
+      y,
+      body.y + PLAYER_RADIUS,
+      body.y + PLAYER_HEIGHT - PLAYER_RADIUS,
+    );
+    if (
+      Math.hypot(x - body.x, y - nearestY, z - body.z) <=
+      PLAYER_RADIUS + ROPE_RADIUS + 0.01
+    )
+      return true;
+  }
+  return false;
+}
 export function stepSpatialTrial(
   state: SpatialTrial,
   delta: number,
   body: Body,
   moved: number,
+  previousBody: Body = body,
 ): SpatialTrial {
   if (state.status !== "playing") return state;
   const dt = clamp(delta, 0, 0.05),
@@ -531,7 +563,10 @@ export function stepSpatialTrial(
       elapsed: state.elapsed + dt,
       phaseTime: state.phaseTime + dt,
     };
-  if (next.elapsed >= (state.kind === "red-light" ? RED_LIGHT_TIME_LIMIT : 65))
+  if (
+    state.kind !== "jump-rope" &&
+    next.elapsed >= (state.kind === "red-light" ? RED_LIGHT_TIME_LIMIT : 65)
+  )
     return {
       ...next,
       status: "lost",
@@ -611,32 +646,50 @@ export function stepSpatialTrial(
           message: "The doors closed. Follow the numbered marker next time.",
         };
     }
-  } else if (next.elapsed >= state.nextCrossing) {
-    if (Math.abs(body.z - ropeZ(state.round)) > 1.6)
-      return {
-        ...next,
-        status: "lost",
-        message: "Move to the glowing marker before the rope arrives.",
+  } else {
+    // Substeps also catch contact between rendered frames or during a fast jump.
+    for (let i = 0; i <= 4; i++) {
+      const fraction = i / 4;
+      const sample = {
+        ...body,
+        x: previousBody.x + (body.x - previousBody.x) * fraction,
+        y: previousBody.y + (body.y - previousBody.y) * fraction,
+        z: previousBody.z + (body.z - previousBody.z) * fraction,
       };
-    if (body.y - groundAt(body.x, body.z) < 0.32)
+      if (
+        ropeTouchesPlayer(
+          sample,
+          state.round,
+          ropeAngle(state.elapsed + dt * fraction, state.nextCrossing),
+        )
+      ) {
+        return {
+          ...next,
+          status: "lost",
+          message: "The rope touched you. Watch its swing and jump clear.",
+        };
+      }
+    }
+    if (next.elapsed >= state.nextCrossing) {
+      const cleared =
+        Math.abs(body.z - ropeZ(state.round)) <= 0.85 &&
+        Math.abs(body.x) <= 1.5 &&
+        body.y - groundAt(body.x, body.z) > 0.32;
+      const round = state.round + Number(cleared);
       return {
         ...next,
-        status: "lost",
+        round,
+        progress: round / 5,
+        nextCrossing: state.nextCrossing + ROPE_PERIOD,
+        status: round === 5 ? "won" : "playing",
         message:
-          "The rope caught you. Jump just before the countdown reaches zero.",
+          round === 5
+            ? "Five clean jumps. You made it across."
+            : cleared
+              ? "Nice jump. Walk to the next glowing marker."
+              : "You are clear of the rope. Move to the marker for the next pass.",
       };
-    const round = state.round + 1;
-    return {
-      ...next,
-      round,
-      progress: round / 5,
-      nextCrossing: state.nextCrossing + 3.6,
-      status: round === 5 ? "won" : "playing",
-      message:
-        round === 5
-          ? "Five clean jumps. You made it across."
-          : "Nice jump. Walk to the next glowing marker.",
-    };
+    }
   }
   return next;
 }

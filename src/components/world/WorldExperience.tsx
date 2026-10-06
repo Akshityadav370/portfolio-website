@@ -11,6 +11,7 @@ import {
 import {
   ZONES,
   RED_LIGHT_TIME_LIMIT,
+  eliminationDelay,
   type GameId,
   type ZoneId,
 } from "@/lib/world/rules";
@@ -35,8 +36,8 @@ const instructions: Record<
     description: "The carousel stops. A number appears. Find that room.",
     steps: [
       "Wait on the carousel while the music plays.",
-      "When it stops, walk through the door with the matching number.",
-      "You have 10 seconds to choose. Complete three rounds.",
+      "When it stops, find the highlighted number above a cubicle and enter it.",
+      "You have 10 seconds to choose. A wrong room or missed deadline brings the guards. Complete three rounds.",
     ],
   },
   "jump-rope": {
@@ -45,7 +46,7 @@ const instructions: Record<
     steps: [
       "Walk onto the pink marker in front of you.",
       "Press Space or Jump just before the countdown reaches zero.",
-      "After each jump, move to the next marker. Clear five crossings.",
+      "Only touching the rope ends your attempt. Missed markers repeat; clear five crossings.",
     ],
   },
 };
@@ -507,9 +508,8 @@ export default function WorldExperience() {
                 <button
                   className="world-primary"
                   disabled={
-                    trial.kind === "red-light" &&
                     snapshot.elimination >= 0 &&
-                    snapshot.elimination < 1.2
+                    snapshot.elimination < 1.2 + eliminationDelay(trial.kind)
                   }
                   onClick={() => {
                     runtime.current?.startGame(trial.kind);
@@ -673,11 +673,25 @@ export default function WorldExperience() {
         <Modal title="World paused" close={enter}>
           <p className="world-kicker">TAKE A BREATHER</p>
           <h2>The world can wait.</h2>
-          <p>Your game is paused. Come back whenever you’re ready.</p>
+          <p>
+            {trial
+              ? "Your round is paused. Resume playing, or leave the game and return to its entrance."
+              : "The world is paused. Come back whenever you’re ready."}
+          </p>
           <button className="world-primary" onClick={enter}>
-            Back to the world ↗
+            {trial ? "Resume game ↗" : "Back to the world ↗"}
           </button>
           <div className="world-settings">
+            {trial && (
+              <button
+                onClick={() => {
+                  runtime.current?.leaveGame();
+                  enter();
+                }}
+              >
+                Leave game &amp; explore ↗
+              </button>
+            )}
             <button onClick={changeSound}>
               {sound ? "Turn sound off" : "Turn sound on"}
             </button>
