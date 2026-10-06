@@ -70,3 +70,5 @@ The active world has larger HUD/dossier type and auto-fitted 3D sign text. Red L
 Desktop mouse movement controls look without dragging; clicking the world requests optional pointer lock for unlimited turning. Escape/capture loss pauses; menus, blur, and disposal release capture. Denied capture retains hover look. Touch drag remains. During manual look, the held movement heading follows the camera; automatic chase still preserves a held course.
 
 Jump Rope uses shared ropeSag/ropeAngle geometry and capsule contact throughout the swing. Missing a marker repeats that checkpoint; there is no timeout elimination. Mingle room numbers are billboards; the called room highlights during choose. Mingle failures trigger guards approaching for 1.4 seconds before the shared shooting/collapse sequence; wins do not. Pause/retry/leave also reset these effects.
+
+Red Light eliminations now use the same 1.4-second guard approach as Mingle before firing. Shared eliminationDelay keeps gunshots, impacts, player collapse, and retry availability synchronized in both games.

@@ -527,7 +527,7 @@ export function ropeAngle(elapsed: number, crossing: number) {
   return ((elapsed - crossing) / ROPE_PERIOD) * Math.PI * 2;
 }
 export function eliminationDelay(kind?: GameId) {
-  return kind === "mingle" ? 1.4 : 0;
+  return kind === "mingle" || kind === "red-light" ? 1.4 : 0;
 }
 /** Sample the same rope curve used by the renderer against the player's vertical capsule. */
 export function ropeTouchesPlayer(body: Body, round: number, angle: number) {

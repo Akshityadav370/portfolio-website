@@ -574,10 +574,13 @@ export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
       const index = i % 2;
       const delay = eliminationDelay(kind);
       const age = activeTime - delay - [0.16, 0.62][index];
-      if (shot.home.kind === "mingle" && activeTime >= 0) {
-        const room = MINGLE_ROOMS.find(
-          (r) => Math.hypot(target.x - r.x, target.z - r.z) < 1.8,
-        );
+      if (activeTime >= 0) {
+        const room =
+          shot.home.kind === "mingle"
+            ? MINGLE_ROOMS.find(
+                (r) => Math.hypot(target.x - r.x, target.z - r.z) < 1.8,
+              )
+            : undefined;
         const startX = (room?.x ?? target.x) + (index === 0 ? -0.7 : 0.7);
         const startZ = room ? room.z + 2.5 : target.z + 3.5;
         const progress = THREE.MathUtils.smoothstep(activeTime, 0, delay);
