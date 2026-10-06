@@ -20,4 +20,4 @@ A calmer final room with an exit toward daylight. A desk phone opens the email a
 2. Equipment room: connect tool choices to existing project data.
 3. Departure lounge: finish with clear contact actions and a visible return route.
 
-The current iteration implements the first-visit invitation animation and the two entry choices, and simplifies /portfolio to introduction, projects, experience, skills, and contact. The three scenes above await the next implementation step.
+The current iteration implements the first-visit invitation animation and the two entry choices, and restores the original Mac/IDE portfolio at /portfolio per the owner’s follow-up. The three scenes above await the next implementation step.

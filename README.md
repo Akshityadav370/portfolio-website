@@ -8,7 +8,7 @@ A walkable Squid Game-inspired compound for Akshit’s engineering portfolio. Bu
 - `feat/player-370-game-portfolio` at `2de9ddd`: invitation and miniature game version.
 - `feat/player-370-open-world`: current third-person world.
 
-A simplified single-page portfolio is available at `/portfolio`, including when WebGL cannot start.
+The original Mac/IDE portfolio is available at `/portfolio`, including when WebGL cannot start.
 
 ## Run locally
 
@@ -59,7 +59,7 @@ See [adaptation notes](docs/sketchbook-physics.md) for the exact source files, r
 | `src/lib/world/audio.ts` | Opt-in playback tied to game state |
 | `tests/world-rules.test.mjs` | Collision, traversal, jumping, and physical win/loss checks |
 | `tests/world-camera.test.mjs` | Camera clearance, ceiling, recovery, and angle-wrap regressions |
-| `src/app/portfolio/page.tsx` | Simplified single-page portfolio |
+| `src/app/portfolio/page.tsx` | Original Mac/IDE portfolio |
 
 ## Verify and build
 
@@ -78,4 +78,4 @@ Desktop camera look follows mouse movement without holding a button. Click the w
 
 Jump Rope now checks the animated rope against the player capsule throughout its swing, including movement between physics ticks. Missing a marker repeats the pass without elimination or progress; only rope contact ends an attempt (no timeout). Mingle has large camera-facing numbers above each room, highlights the called room, and sends two guards toward an eliminated player before firing.
 
-The entry invitation offers the 3D world or a concise `/portfolio` page. A falling card and moving symbols play on the first visit; repeat visits skip the animation, and reduced-motion settings disable it. The SPA presents work, experience, tools, and contact without mini-games. The selected next scene concepts are documented in `docs/world-section-concepts.md`.
+The entry invitation offers the 3D world or the original `/portfolio` page. A falling card and moving symbols play on the first visit; repeat visits skip the animation, and reduced-motion settings disable it. The SPA retains its original design, theme switcher, terminal, and content, without Squid Game styling. The selected next scene concepts are documented in `docs/world-section-concepts.md`.
