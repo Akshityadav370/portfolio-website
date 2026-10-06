@@ -28,6 +28,7 @@
   height: 100%;
 }
 .world-experience button:focus-visible,
+.world-spa-link:focus-visible,
 .world-dialog button:focus-visible,
 .world-dialog a:focus-visible {
   outline: 3px solid #f36596;
@@ -95,7 +96,8 @@
   gap: 8px;
   pointer-events: auto;
 }
-.world-hud-header button {
+.world-hud-header button,
+.world-hud-header .world-spa-link {
   border: 1px solid #e5e3c846;
   background: #193c35ed;
   padding: 12px 17px;
@@ -716,7 +718,8 @@
   .world-hud-header nav {
     gap: 5px;
   }
-  .world-hud-header button {
+  .world-hud-header button,
+  .world-hud-header .world-spa-link {
     padding: 10px;
     font-size: 13px;
   }
@@ -925,7 +928,8 @@
   .world-hud-header nav {
     gap: 4px;
   }
-  .world-hud-header button {
+  .world-hud-header button,
+  .world-hud-header .world-spa-link {
     padding: 10px 7px;
   }
   .world-trial-hud {
@@ -973,4 +977,139 @@
   .world-trial-hud.game-red-light ~ .world-map-button {
     display: none;
   }
+}
+
+.world-invite-stage {
+  perspective: 900px;
+}
+.world-invite-symbols {
+  display: flex;
+  justify-content: center;
+  gap: 17px;
+  font:
+    56px/1 Arial,
+    sans-serif;
+}
+.world-invite-symbols span {
+  display: inline-block;
+}
+.world-invite-arriving {
+  animation: invite-arrival 1.8s cubic-bezier(0.18, 0.65, 0.24, 1) both;
+}
+.world-invite-arriving .world-invite-symbols span {
+  animation: invite-symbol 1.3s 0.3s both;
+}
+.world-invite-arriving .world-invite-symbols span:nth-child(2) {
+  animation-delay: 0.45s;
+}
+.world-invite-arriving .world-invite-symbols span:nth-child(3) {
+  animation-delay: 0.6s;
+}
+@keyframes invite-arrival {
+  0% {
+    opacity: 0;
+    transform: translateY(-170px) rotateX(65deg) rotateZ(24deg) scale(0.75);
+  }
+  45% {
+    opacity: 1;
+    transform: translateY(10px) rotateX(-12deg) rotateZ(-10deg);
+  }
+  70% {
+    transform: translateY(-8px) rotateX(5deg) rotateZ(-4deg);
+  }
+  100% {
+    transform: translateY(0) rotateX(0) rotateZ(-7deg);
+  }
+}
+@keyframes invite-symbol {
+  0% {
+    opacity: 0;
+    transform: translateY(-26px) rotate(-90deg) scale(0.6);
+  }
+  65% {
+    opacity: 1;
+    transform: translateY(4px) rotate(10deg) scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+.world-entry-choices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 24px;
+  text-align: left;
+}
+.world-entry-choices > * {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border: 1px solid #a6b9a5;
+  padding: 20px;
+  background: #e5ecda;
+  color: #183e36;
+  text-decoration: none;
+  border-radius: 4px;
+  text-align: left;
+}
+.world-entry-choices > button {
+  background: #193f36;
+  color: #fff2da;
+}
+.world-entry-choices > *:hover {
+  border-color: #d6396b;
+}
+.world-entry-choices > *:focus-visible {
+  outline: 3px solid #d6396b;
+  outline-offset: 4px;
+}
+.world-entry-choices > button:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+.world-entry-choices span {
+  font-size: 11px;
+  letter-spacing: 1px;
+}
+.world-entry-choices strong {
+  font-size: 19px;
+}
+.world-entry-choices small {
+  font-size: 14px;
+  line-height: 1.5;
+}
+@media (max-width: 540px) {
+  .world-entry-choices {
+    grid-template-columns: 1fr;
+  }
+  .world-entry-choices > * {
+    padding: 15px;
+    gap: 6px;
+  }
+  .world-invitation h1 {
+    font-size: 42px;
+    margin: 16px 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .world-invite-arriving,
+  .world-invite-arriving .world-invite-symbols span {
+    animation: none;
+  }
+}
+
+.world-spa-link {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.world-hud-header nav {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.world-brand {
+  flex-shrink: 0;
 }

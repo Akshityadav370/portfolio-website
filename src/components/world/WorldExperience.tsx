@@ -1,4 +1,5 @@
 "use client";
+import InvitationCard from "./InvitationCard";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   profile,
@@ -420,6 +421,14 @@ export default function WorldExperience() {
               <span>{activeZone?.name}</span>
             </div>
             <nav aria-label="World controls">
+              <a
+                className="world-spa-link"
+                href="/portfolio"
+                aria-label="Go to SPA portfolio"
+                title="Go to SPA portfolio (Esc releases the cursor)"
+              >
+                SPA ↗
+              </a>
               <button onClick={() => setScreen("map")} aria-label="Open map">
                 Map <kbd>M</kbd>
               </button>
@@ -594,52 +603,47 @@ export default function WorldExperience() {
             <p className="world-kicker">
               AN INTERACTIVE PORTFOLIO BY AKSHIT YADAV
             </p>
-            <div
-              className="world-invite-card"
-              aria-label="Kraft invitation card with circle triangle and square"
-            >
-              <span>○ △ □</span>
-              <small>AN INVITATION TO PLAY.</small>
-            </div>
+            <InvitationCard />
             <h1>
               Your story
               <br />
               starts here.
             </h1>
-            <p>
-              Walk into a world of curious work and familiar games.
-              <br />
-              Eight places. Three trials. One engineer.
-            </p>
-            {failed ? (
-              <>
-                <p>The 3D world couldn’t start on this device.</p>
-                <a className="world-primary" href="/portfolio">
-                  Open the portfolio ↗
-                </a>
-              </>
-            ) : (
-              <>
-                <button
-                  disabled={!ready}
-                  className="world-primary"
-                  onClick={enter}
-                >
-                  {ready ? "Enter the world ↗" : "Preparing your world…"}
-                </button>
-                <div className="world-invite-options">
-                  <button onClick={changeSound} aria-pressed={sound}>
-                    {sound ? "♫ Sound enabled" : "♫ Enable game sound"}
-                  </button>
-                  <a href="/portfolio">Just show me the work</a>
-                </div>
-                <small>
-                  WASD TO WALK · MOUSE TO LOOK · E TO INTERACT
-                  <br />
-                  Touch controls available on mobile
-                </small>
-              </>
+            <p>One portfolio. Two ways to explore.</p>
+            <div className="world-entry-choices">
+              <button disabled={!ready || failed} onClick={enter}>
+                <span>01 / THE EXPERIENCE</span>
+                <strong>
+                  {failed
+                    ? "3D unavailable"
+                    : ready
+                      ? "Explore the 3D world ↗"
+                      : "Preparing the 3D world…"}
+                </strong>
+                <small>Walk, discover, and play.</small>
+              </button>
+              <a href="/portfolio">
+                <span>02 / THE WORK</span>
+                <strong>Explore the SPA ↗</strong>
+                <small>A quick read of my work and experience.</small>
+              </a>
+            </div>
+            {failed && (
+              <p>
+                The 3D world couldn’t start on this device. The SPA is ready to
+                explore.
+              </p>
             )}
+            <div className="world-invite-options">
+              <button onClick={changeSound} aria-pressed={sound}>
+                {sound ? "♫ Sound enabled" : "♫ Enable game sound"}
+              </button>
+            </div>
+            <small>
+              WASD TO WALK · MOUSE TO LOOK · E TO INTERACT
+              <br />
+              Touch controls available on mobile
+            </small>
           </div>
         </Modal>
       )}
@@ -758,7 +762,7 @@ export default function WorldExperience() {
             <button onClick={() => setScreen("map")}>
               Open map / recover position
             </button>
-            <a href="/portfolio">Read the full portfolio ↗</a>
+            <a href="/portfolio">Go to SPA portfolio ↗</a>
           </div>
           <p className="world-help">
             Move your mouse to look around. Click the world to capture the
