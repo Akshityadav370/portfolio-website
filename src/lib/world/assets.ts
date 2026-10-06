@@ -1,3 +1,4 @@
+import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { EXHIBITS } from "./exhibits";
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
@@ -36,6 +37,40 @@ export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
     wood: mat(0x796149),
     white: mat(0xfbf2de),
   };
+  // Small-scale surface grain gives plaster, cloth and metal different responses to light.
+  const grainCanvas = document.createElement("canvas");
+  grainCanvas.width = grainCanvas.height = 128;
+  const grainContext = grainCanvas.getContext("2d")!;
+  const grainPixels = grainContext.createImageData(128, 128);
+  let grainSeed = 370;
+  for (let i = 0; i < grainPixels.data.length; i += 4) {
+    grainSeed = (Math.imul(grainSeed, 1664525) + 1013904223) >>> 0;
+    const value = 110 + (grainSeed % 36);
+    grainPixels.data.set([value, value, value, 255], i);
+  }
+  grainContext.putImageData(grainPixels, 0, 0);
+  const grain = new THREE.CanvasTexture(grainCanvas);
+  grain.wrapS = grain.wrapT = THREE.RepeatWrapping;
+  grain.repeat.set(6, 6);
+  textures.push(grain);
+  for (const material of [
+    palette.pink,
+    palette.mint,
+    palette.blue,
+    palette.cream,
+    palette.sand,
+  ]) {
+    material.bumpMap = grain;
+    material.bumpScale = 0.035;
+    material.roughness = 0.95;
+  }
+  palette.dark.metalness = 0.45;
+  palette.dark.roughness = 0.4;
+  palette.black.metalness = 0.2;
+  palette.black.roughness = 0.45;
+  palette.teal.bumpMap = grain;
+  palette.teal.bumpScale = 0.009;
+  palette.skin.roughness = 0.58;
   type Mat = THREE.Material;
   function box(
     parent: THREE.Object3D,
@@ -48,7 +83,12 @@ export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
     m: Mat,
     solid = false,
   ) {
-    const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m);
+    const mesh = new THREE.Mesh(
+      Math.max(w, h, d) < 3
+        ? new RoundedBoxGeometry(w, h, d, 2, Math.min(w, h, d) * 0.12)
+        : new THREE.BoxGeometry(w, h, d),
+      m,
+    );
     mesh.position.set(x, y, z);
     mesh.castShadow = true;
     mesh.receiveShadow = true;
@@ -65,7 +105,7 @@ export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
     r: number,
     m: Mat,
   ) {
-    const mesh = new THREE.Mesh(new THREE.SphereGeometry(r, 16, 10), m);
+    const mesh = new THREE.Mesh(new THREE.SphereGeometry(r, 24, 16), m);
     mesh.position.set(x, y, z);
     mesh.castShadow = true;
     parent.add(mesh);
@@ -168,13 +208,25 @@ export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
       const leg = new THREE.Group();
       leg.position.set(direction * 0.15, 0.74, 0);
       group.add(leg);
-      box(leg, 0, -0.35, 0, 0.23, 0.65, 0.23, suit);
+      const trouser = new THREE.Mesh(
+        new THREE.CapsuleGeometry(0.115, 0.42, 4, 10),
+        suit,
+      );
+      trouser.position.y = -0.35;
+      trouser.castShadow = true;
+      leg.add(trouser);
       box(leg, 0, -0.69, 0.055, 0.25, 0.12, 0.38, palette.white);
       legs.push(leg);
       const arm = new THREE.Group();
       arm.position.set(direction * 0.38, 1.29, 0);
       group.add(arm);
-      box(arm, 0, -0.28, 0, 0.19, 0.6, 0.22, suit);
+      const sleeve = new THREE.Mesh(
+        new THREE.CapsuleGeometry(0.105, 0.4, 4, 10),
+        suit,
+      );
+      sleeve.position.y = -0.28;
+      sleeve.castShadow = true;
+      arm.add(sleeve);
       sphere(arm, 0, -0.59, 0, 0.105, guard ? palette.black : palette.skin);
       arms.push(arm);
       box(group, direction * 0.2, 1.03, 0.17, 0.04, 0.58, 0.018, palette.white);
@@ -189,6 +241,9 @@ export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
       ring.position.set(0, 1.64, 0.257);
       group.add(ring);
     } else {
+      sphere(group, 0, 1.58, 0.25, 0.055, palette.skin);
+      for (const side of [-1, 1])
+        sphere(group, side * 0.24, 1.59, 0, 0.055, palette.skin);
       const hair = sphere(head, 0, 0.13, -0.04, 0.23, palette.black);
       hair.scale.y = 0.55;
       for (const x of [-0.08, 0.08])
@@ -860,6 +915,30 @@ export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
         0.5,
         0.65,
       );
+    } else if (exhibit.kind === "beacon") {
+      const core = new THREE.Mesh(
+        new THREE.IcosahedronGeometry(0.27, 2),
+        new THREE.MeshStandardMaterial({
+          color: 0x83f6e2,
+          emissive: 0x2f9d8e,
+          emissiveIntensity: 0.6,
+          metalness: 0.5,
+          roughness: 0.2,
+        }),
+      );
+      core.position.set(0, 0.45, 0.25);
+      hinge.add(core);
+      for (let i = 0; i < 3; i++) {
+        const orbit = new THREE.Mesh(
+          new THREE.TorusGeometry(0.45 + i * 0.07, 0.014, 8, 48),
+          palette.yellow,
+        );
+        orbit.position.copy(core.position);
+        orbit.rotation.set(i * 0.8, i * 1.1, 0);
+        hinge.add(orbit);
+      }
+      sign(group, "BUILT WITH LOVE", 0, 2.55, 0, 2.6, 0.35);
+      sign(group, "USING GPT 6 ASTRA", 0, 2.16, 0, 2.6, 0.35);
     } else if (exhibit.kind === "phone") {
       box(hinge, 0, 0.13, 0.25, 0.65, 0.16, 0.2, palette.rose);
       for (const x of [-0.25, 0.25])
@@ -887,7 +966,7 @@ export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
     }
     const label = sign(
       group,
-      exhibit.label,
+      exhibit.kind === "beacon" ? "E / ACTIVATE ASTRA" : exhibit.label,
       0,
       tall ? 2.15 : 1.65,
       0,
@@ -996,7 +1075,9 @@ export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
   root.traverse((object) => {
     if (object instanceof THREE.Mesh && !Array.isArray(object.material)) {
       const list = batches.get(object.material) ?? [];
-      const geo = object.geometry.clone();
+      const geo = object.geometry.index
+        ? object.geometry.toNonIndexed()
+        : object.geometry.clone();
       geo.applyMatrix4(object.matrixWorld);
       list.push(geo);
       batches.set(object.material, list);
@@ -1019,22 +1100,21 @@ export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
   }
   // Optional CC0 scenery loads after the core world is usable.
   const assetPromises = Object.entries({
-    tree_oak: 6,
-    tree_pineRoundA: 5,
-    plant_bush: 1.2,
-    rock_largeA: 1.5,
+    oak: 6,
+    pine: 5,
+    bush: 1.2,
+    boulder: 1.5,
   })
     .map(async ([name, height], type) => {
       const gltf = await new GLTFLoader().loadAsync(
-        `/models/nature/${name}.glb`,
+        `/models/polished/${name}.glb`,
       );
       if (isDisposed()) {
         disposeObject(gltf.scene);
         return;
       }
-      const size = new THREE.Box3()
-        .setFromObject(gltf.scene)
-        .getSize(new THREE.Vector3());
+      const bounds = new THREE.Box3().setFromObject(gltf.scene);
+      const size = bounds.getSize(new THREE.Vector3());
       const scale = height / size.y;
       const points =
         type === 0
@@ -1073,7 +1153,8 @@ export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
       for (const [x, z] of points) {
         const model = gltf.scene.clone(true);
         model.scale.setScalar(scale);
-        model.position.set(x, 0, z);
+        model.position.set(x, -bounds.min.y * scale, z);
+        model.rotation.y = (x * 0.73 + z * 0.31) % (Math.PI * 2);
         model.traverse((o) => {
           if (o instanceof THREE.Mesh) {
             o.castShadow = true;
@@ -1108,7 +1189,10 @@ export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
           (reduced ? 1 : 1 - Math.exp(-dt * 8));
         if (prop.exhibit.kind === "locker" || prop.exhibit.kind === "archive")
           prop.hinge.rotation.y = -prop.amount * 1.7;
-        else if (prop.exhibit.kind === "phone") {
+        else if (prop.exhibit.kind === "beacon") {
+          if (!reduced && open) prop.hinge.rotation.y += dt * 1.2;
+          prop.hinge.position.y = 1.1 + prop.amount * 0.2;
+        } else if (prop.exhibit.kind === "phone") {
           prop.hinge.position.y = 1.1 + prop.amount * 0.45;
           prop.hinge.rotation.z = -prop.amount * 0.25;
         } else prop.hinge.rotation.x = -prop.amount * 1.25;

@@ -9,11 +9,23 @@ export type Exhibit = {
   title: string;
   label: string;
   text: string;
-  kind: "locker" | "archive" | "screen" | "case" | "phone" | "dossier";
+  kind:
+    "locker" | "archive" | "screen" | "case" | "phone" | "dossier" | "beacon";
   index?: number;
   tools?: string[];
 };
 export const EXHIBITS: Exhibit[] = [
+  {
+    id: "astra-beacon",
+    zone: "dormitory",
+    x: 2.3,
+    y: 0,
+    z: 7,
+    title: "Activate the Astra beacon",
+    label: "GPT 6 ASTRA",
+    text: "Built with love using GPT 6 Astra",
+    kind: "beacon",
+  },
   {
     id: "player-locker",
     zone: "dormitory",

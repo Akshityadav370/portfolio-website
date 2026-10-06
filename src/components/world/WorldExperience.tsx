@@ -496,6 +496,13 @@ export default function WorldExperience() {
               </small>
               <h2>{snapshot.exhibit.label}</h2>
               <p>{snapshot.exhibit.text}</p>
+              {snapshot.exhibit.kind === "beacon" && (
+                <p>
+                  A little thank-you to the tools behind this world. The
+                  orbiting light wakes up when you activate it. Press E again to
+                  let it rest.
+                </p>
+              )}
               {snapshot.exhibit.tools && (
                 <div className="world-exhibit-projects">
                   <strong>Used in these projects</strong>
@@ -812,9 +819,9 @@ export default function WorldExperience() {
               {sound ? "Turn sound off" : "Turn sound on"}
             </button>
             <label>
-              Music volume{" "}
+              Sound volume{" "}
               <input
-                aria-label="Music volume"
+                aria-label="Sound volume"
                 type="range"
                 min="0"
                 max="1"
@@ -912,14 +919,39 @@ export default function WorldExperience() {
           title={ZONES.find((z) => z.id === selected)?.name ?? "Player file"}
           close={enter}
         >
-          <Dossier
-            zone={selected}
-            index={
-              snapshot?.exhibit?.zone === selected
-                ? snapshot.exhibit.index
-                : undefined
-            }
-          />
+          {snapshot?.exhibit?.kind === "beacon" ? (
+            <>
+              <p className="world-kicker">THE ASTRA BEACON</p>
+              <h2>Built with love using GPT 6 Astra</h2>
+              <p>
+                A small interactive signature for a world built around Akshit’s
+                work, curiosity, and love of games.
+              </p>
+              <p>
+                The exploration soundtrack is an original ambient composition.
+                The textured boulder is a CC0 asset from Poly Haven.
+              </p>
+              <div className="world-link-row">
+                <a
+                  href="https://polyhaven.com/a/boulder_01"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Scenery credit · Poly Haven ↗
+                </a>
+                <a href="/portfolio">Explore the portfolio ↗</a>
+              </div>
+            </>
+          ) : (
+            <Dossier
+              zone={selected}
+              index={
+                snapshot?.exhibit?.zone === selected
+                  ? snapshot.exhibit.index
+                  : undefined
+              }
+            />
+          )}
         </Modal>
       )}
       {screen === "briefing" && game && !failed && (

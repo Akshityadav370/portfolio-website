@@ -83,3 +83,7 @@ The entry invitation offers the 3D world or the original `/portfolio` page. A fa
 ## Interactive portfolio objects
 
 Sixteen objects across the five portfolio areas respond to E or the mobile interaction button: a player locker, four company archives along the stairs, five project consoles, four equipment cases, and a contact phone/résumé dossier. Hinges, receivers, lights, and proximity rings respond in the world. A live panel shows the selected content and relevant project/contact links; F opens the full record. E toggles the object, walking away closes it, and the panel counts objects explored this visit. The original SPA is unchanged.
+
+## Scenery and sound polish
+
+Active scenery uses original detailed foliage GLBs and a CC0 textured Poly Haven boulder, loaded asynchronously and shared between instances. Rounded props, capsule limbs, plaster/fabric grain, material roughness, and warmer lighting improve the world’s finish. See `public/models/ATTRIBUTION.md`. The optional original ambient loop plays while exploring and yields to game music; menus and hidden tabs pause it. At the starting area, press E by the Astra beacon to activate its orbiting light and read “Built with love using GPT 6 Astra”. There are now 17 interactive exhibits.

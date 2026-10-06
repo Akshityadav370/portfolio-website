@@ -16,6 +16,56 @@ export function createWorldAudio() {
   const cache = new Map<string, HTMLAudioElement>();
   let context: AudioContext | null = null;
   const effects = new Set<AudioScheduledSourceNode>();
+  let ambience: AudioBufferSourceNode | null = null;
+  let ambienceGain: GainNode | null = null;
+  let ambienceBuffer: AudioBuffer | null = null;
+  function stopAmbience() {
+    ambience?.stop();
+    ambience?.disconnect();
+    ambienceGain?.disconnect();
+    ambience = null;
+    ambienceGain = null;
+  }
+  function playAmbience() {
+    if (!context || ambience || !enabled || disposed) return;
+    if (!ambienceBuffer) {
+      // An original 16-second ambient progression: soft pads and a bell arpeggio.
+      const rate = 22050;
+      ambienceBuffer = context.createBuffer(1, rate * 16, rate);
+      const data = ambienceBuffer.getChannelData(0);
+      const chords = [
+        [110, 130.81, 164.81],
+        [87.31, 110, 130.81],
+        [130.81, 164.81, 196],
+        [98, 123.47, 146.83],
+      ];
+      for (let i = 0; i < data.length; i++) {
+        const t = i / rate;
+        const chord = chords[Math.floor(t / 4)];
+        const phase = t % 4;
+        const envelope = Math.min(1, phase / 0.7, (4 - phase) / 0.7);
+        let sample = 0;
+        for (const frequency of chord)
+          sample += Math.sin(t * frequency * Math.PI * 2) * 0.13 * envelope;
+        const noteTime = t % 0.5;
+        const note = chord[Math.floor(t * 2) % 3] * 4;
+        sample +=
+          Math.sin(noteTime * note * Math.PI * 2) *
+          Math.exp(-noteTime * 10) *
+          Math.min(1, noteTime * 80) *
+          0.12;
+        data[i] = sample * Math.min(1, t / 0.1, (16 - t) / 0.2);
+      }
+    }
+    ambience = context.createBufferSource();
+    ambience.buffer = ambienceBuffer;
+    ambience.loop = true;
+    ambienceGain = context.createGain();
+    ambienceGain.gain.value = volume * 0.45;
+    ambience.connect(ambienceGain);
+    ambienceGain.connect(context.destination);
+    ambience.start();
+  }
   function stopEffects() {
     for (const node of effects) {
       try {
@@ -83,6 +133,8 @@ export function createWorldAudio() {
     thump.stop(now + 0.13);
   }
   function sync(game: SpatialTrial | null, paused: boolean) {
+    if (enabled && !game && !paused && !document.hidden) playAmbience();
+    else stopAmbience();
     if (paused || !game || game.status === "playing" || document.hidden)
       stopEffects();
     const playing =
@@ -150,12 +202,19 @@ export function createWorldAudio() {
       if (!value) {
         request++;
         current?.pause();
+        stopAmbience();
         stopEffects();
       }
     },
     setVolume(value: number) {
       volume = value;
       if (current) current.volume = value;
+      if (ambienceGain)
+        ambienceGain.gain.setTargetAtTime(
+          value * 0.45,
+          context!.currentTime,
+          0.05,
+        );
     },
     dispose() {
       disposed = true;
@@ -166,6 +225,8 @@ export function createWorldAudio() {
         audio.load();
       }
       cache.clear();
+      stopAmbience();
+      ambienceBuffer = null;
       stopEffects();
       void context?.close().catch(() => {});
       context = null;

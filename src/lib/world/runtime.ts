@@ -106,7 +106,7 @@ export function createWorld(
   renderer.shadowMap.type = THREE.PCFShadowMap;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.1;
+  renderer.toneMappingExposure = 0.95;
   renderer.domElement.setAttribute(
     "aria-label",
     "Third-person portfolio world. Use WASD to walk, move the mouse to look, click the world for continuous mouse look, Escape to release the cursor, Space to jump, and E to interact.",
@@ -114,12 +114,12 @@ export function createWorld(
   host.append(renderer.domElement);
   host.tabIndex = 0;
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0xc8dcd8);
-  scene.fog = new THREE.Fog(0xc8dcd8, 45, 115);
+  scene.background = new THREE.Color(0xbecdd1);
+  scene.fog = new THREE.Fog(0xbecdd1, 45, 115);
   const camera = new THREE.PerspectiveCamera(58, 1, 0.1, 150);
-  scene.add(new THREE.HemisphereLight(0xfff6df, 0x567b74, 2.4));
-  const sun = new THREE.DirectionalLight(0xffeccf, 3);
-  sun.position.set(-25, 48, 25);
+  scene.add(new THREE.HemisphereLight(0xfff6df, 0x56645f, 1.5));
+  const sun = new THREE.DirectionalLight(0xffe0b0, 3.2);
+  sun.position.set(-25, 38, 25);
   sun.castShadow = true;
   sun.shadow.mapSize.set(2048, 2048);
   sun.shadow.camera.left = -55;
