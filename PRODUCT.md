@@ -21,7 +21,7 @@ Personal portfolio for an active job search targeting **full-stack roles** — n
 
 **Full-stack + AI-native range** is the headline claim: 2.5+ years shipping across web, mobile, backend, and LLM-powered products end to end (React micro-frontends, Spring Boot microservices, real-time apps, RAG/LLM tooling) — range a frontend-only or backend-only competing portfolio couldn't truthfully copy.
 
-Note: this is a shift from the "speed as proof-of-craft" framing recorded in `CLAUDE.md` (near-zero JS, live PerfHud pill). Speed/craft is still real and still on the site as supporting evidence — but it's no longer the headline pitch; full-stack/AI-native range is. `CLAUDE.md` hasn't been updated to reflect this yet.
+This supersedes the historical "speed as proof-of-craft" framing. The current playable third-person world design leads with full-stack/AI-native range, while engineering quality remains supporting evidence. See the current-design notes in `CLAUDE.md`.
 
 ## Operating Context
 
@@ -30,11 +30,15 @@ Note: this is a shift from the "speed as proof-of-craft" framing recorded in `CL
 - Akshit edits `resume.ts` / `layout.tsx` directly between work sessions — his latest wording is authoritative and should never be silently reverted.
 - Currently employed full-time at Zotok AI while conducting this search.
 
+## Current presentation
+
+The user approved a Squid Game-inspired miniature portfolio on a separate branch, preserving the prior workshop design at `703dd5f` on `feat/3d-workshop-portfolio`. Visitors can explore the invitation, player record, career staircase, control room, optional games, equipment room, and contact chapter. Mini-games never gate résumé or project access. Music remains owner-supplied; generated cues are opt-in and all gameplay cues have visual equivalents.
+
 ## Capabilities and Constraints
 
 - Next.js static export (`output: "export"`) — no server runtime. This blocks any feature needing a backend (Spotify "last played" card, anonymous WhatsApp messaging) until a migration decision is made; both are backlog, not started.
 - Deployed on Vercel under the `xansr` team scope — deliberate choice, not to be second-guessed.
-- One added npm dependency so far: `simple-icons`. No animation libraries — motion is CSS + small rAF loops by design.
+- Visual dependencies: `simple-icons` and `three` (with `@types/three` for development). The 3D scene module loads near the viewport; motion uses CSS and requestAnimationFrame, with offscreen/hidden-tab suspension and reduced-motion support.
 - `lovable.iakshit.space` project link is HTTP-only (no TLS on that GKE ingress yet) — a known, real gap; don't paper over it by hiding or relabeling the link.
 - `www.iakshit.space` CNAME had resolution issues at launch — unresolved, needs checking against Namecheap.
 
@@ -56,7 +60,7 @@ Note: this is a shift from the "speed as proof-of-craft" framing recorded in `CL
 ## Product Principles
 
 1. **Full-stack + AI-native range is the headline claim** — every surface should read as "ships across web, mobile, backend, and LLM products," not as a frontend specialist's portfolio.
-2. **Craft remains evidence, not just narrative.** The near-zero-JS build and clean execution still back up the range claim; don't let engineering quality slide just because it's no longer the headline pitch.
+2. **Craft remains evidence, not just narrative.** The 3D presentation uses progressive enhancement: readable HTML first, deferred procedural scenes, bounded pixel density, and a static fallback. Engineering quality still backs up the range claim.
 3. **Every claim needs a receipt.** Skills point to where they were used, achievements link to proof, performance wins are attributed honestly to teams, not claimed solo.
 4. **Serve two reading depths on the same surface.** A recruiter's 30-second skim and an engineer's 10-minute deep-dive both need to succeed without separate paths.
 5. **The site is a living artifact, not a fixed launch.** Content changes between sessions (Akshit edits `resume.ts` directly) — new work should build on his latest state, not assume the last-known snapshot is current.

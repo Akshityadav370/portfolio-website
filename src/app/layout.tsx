@@ -7,6 +7,7 @@ import {
   LIGHT_THEMES,
 } from "@/data/themes";
 import "./globals.css";
+import "./world.css";
 
 // Runs before paint so there is no flash: marks JS as available (scroll
 // reveals), picks light/dark from the visitor's local clock (unless they've
@@ -53,7 +54,11 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
-        <script dangerouslySetInnerHTML={{ __html: bootScript }} />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `if (location.pathname === '/portfolio' || location.pathname === '/portfolio/') { ${bootScript} }`,
+          }}
+        />
         {children}
       </body>
     </html>

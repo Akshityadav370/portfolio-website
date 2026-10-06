@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Local agent packages and nested checkouts are not application source.
+    ".claude/**",
+    ".agents/**",
+    ".codex/**",
   ]),
 ]);
 
