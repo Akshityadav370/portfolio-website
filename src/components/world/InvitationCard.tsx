@@ -27,7 +27,7 @@ export default function InvitationCard() {
           <span>△</span>
           <span>□</span>
         </div>
-        <small>AN INVITATION TO PLAY.</small>
+        <small>CURIOSITY IS YOUR ENTRY FEE.</small>
       </div>
     </div>
   );

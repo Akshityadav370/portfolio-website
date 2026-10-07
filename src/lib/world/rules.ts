@@ -19,6 +19,88 @@ export type Obstacle = {
   bottom: number;
   top: number;
 };
+// Connected paths shared by the scenery and maps; junctions stay outside walls.
+export const WORLD_PATHS: {
+  points: [number, number][];
+  district: "work" | "games" | "shared";
+}[] = [
+  {
+    points: [
+      [0, -10],
+      [0, 10],
+    ],
+    district: "shared",
+  },
+  {
+    points: [
+      [-12, 10],
+      [12, 10],
+    ],
+    district: "shared",
+  },
+  {
+    points: [
+      [12, -8],
+      [12, 49],
+      [0, 49],
+    ],
+    district: "work",
+  },
+  {
+    points: [
+      [0, -8],
+      [25, -8],
+      [25, -12],
+    ],
+    district: "work",
+  },
+  {
+    points: [
+      [12, 23],
+      [25, 23],
+      [25, 20],
+    ],
+    district: "work",
+  },
+  {
+    points: [
+      [12, 45],
+      [33, 45],
+    ],
+    district: "work",
+  },
+  {
+    points: [
+      [25, 45],
+      [25, 41],
+    ],
+    district: "work",
+  },
+  {
+    points: [
+      [-12, -4],
+      [-12, 49],
+      [0, 49],
+    ],
+    district: "games",
+  },
+  {
+    points: [
+      [-12, -4],
+      [-28, -4],
+      [-28, -9],
+    ],
+    district: "games",
+  },
+  {
+    points: [
+      [-12, 29],
+      [-28, 29],
+      [-28, 25],
+    ],
+    district: "games",
+  },
+];
 export const ZONES: {
   id: ZoneId;
   name: string;
@@ -31,8 +113,8 @@ export const ZONES: {
 }[] = [
   {
     id: "dormitory",
-    name: "The dormitory",
-    subtitle: "Meet Akshit · player file",
+    name: "Base Camp",
+    subtitle: "About me · meet the builder behind the keyboard",
     x: 0,
     z: 0,
     spawn: { x: 0, z: 7 },
@@ -40,8 +122,8 @@ export const ZONES: {
   },
   {
     id: "career",
-    name: "The staircase",
-    subtitle: "Experience · every level counts",
+    name: "Level-Up Log",
+    subtitle: "Experience · lessons earned, one role at a time",
     x: 0,
     z: -24,
     spawn: { x: 0, z: -10 },
@@ -49,8 +131,8 @@ export const ZONES: {
   },
   {
     id: "projects",
-    name: "The control room",
-    subtitle: "Five projects · inspect the work",
+    name: "Build Lab",
+    subtitle: "Projects · ideas that made it out of my head",
     x: 25,
     z: -15,
     spawn: { x: 25, z: -8 },
@@ -58,8 +140,8 @@ export const ZONES: {
   },
   {
     id: "skills",
-    name: "The equipment room",
-    subtitle: "Skills · tools with evidence",
+    name: "Toolkit",
+    subtitle: "Skills · the tools I turn to when things get interesting",
     x: 25,
     z: 13,
     spawn: { x: 25, z: 20 },
@@ -67,7 +149,7 @@ export const ZONES: {
   },
   {
     id: "red-light",
-    name: "Red light, green light",
+    name: "Red Light, Green Light",
     subtitle: "Walk on green. Freeze on red.",
     x: -28,
     z: -22,
@@ -77,7 +159,7 @@ export const ZONES: {
   },
   {
     id: "mingle",
-    name: "The carousel",
+    name: "Mingle",
     subtitle: "Hear the number. Find the room.",
     x: -28,
     z: 15,
@@ -87,7 +169,7 @@ export const ZONES: {
   },
   {
     id: "jump-rope",
-    name: "The sky bridge",
+    name: "Jump Rope",
     subtitle: "Follow the rope. Time your jumps.",
     x: 0,
     z: 36,
@@ -97,14 +179,21 @@ export const ZONES: {
   },
   {
     id: "contact",
-    name: "The next chapter",
-    subtitle: "Email · résumé · social links",
+    name: "Let’s Talk",
+    subtitle: "Contact · good conversations start with hello",
     x: 25,
     z: 38,
     spawn: { x: 25, z: 45 },
     yaw: 0,
   },
 ];
+/** Shared by map headings, dossier labels, and physical wayfinding signs. */
+export function zoneLabel(id: ZoneId) {
+  const index = ZONES.findIndex((zone) => zone.id === id);
+  return (
+    String(index + 1).padStart(2, "0") + " / " + ZONES[index].name.toUpperCase()
+  );
+}
 export const POIS: {
   zone: ZoneId;
   x: number;
@@ -112,10 +201,10 @@ export const POIS: {
   y: number;
   title: string;
 }[] = [
-  { zone: "dormitory", x: 0, z: 0, y: 0, title: "Open player file" },
-  { zone: "career", x: 0, z: -24, y: 4.2, title: "Read the career chapters" },
-  { zone: "projects", x: 25, z: -15, y: 0, title: "Inspect the project feeds" },
-  { zone: "skills", x: 25, z: 13, y: 0, title: "Inspect the equipment" },
+  { zone: "dormitory", x: 0, z: 0, y: 0, title: "Meet Akshit" },
+  { zone: "career", x: 0, z: -24, y: 4.2, title: "Explore my experience" },
+  { zone: "projects", x: 25, z: -15, y: 0, title: "Explore my projects" },
+  { zone: "skills", x: 25, z: 13, y: 0, title: "Explore my skills" },
   {
     zone: "red-light",
     x: -28,

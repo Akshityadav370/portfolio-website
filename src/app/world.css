@@ -1187,3 +1187,24 @@
     display: none;
   }
 }
+
+.world-invite-note {
+  max-width: 620px;
+  margin: 0 auto 22px;
+  padding: 14px 20px;
+  border: 1px solid #aab59e;
+  border-radius: 4px;
+  background: #e6eadc;
+  box-shadow: inset 0 0 0 4px #f2edde;
+}
+.world-invite-note > span {
+  font-size: 10px;
+  letter-spacing: 1.8px;
+  color: #65765c;
+}
+.world-invite-note > p {
+  margin: 7px 0 0;
+  font-size: clamp(15px, 1.8vw, 18px);
+  line-height: 1.5;
+  color: #23473d;
+}
