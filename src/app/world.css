@@ -1208,3 +1208,130 @@
   line-height: 1.5;
   color: #23473d;
 }
+
+/* A quiet opening frame, followed by the invitation's physical arrival. */
+.world-opening {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  margin: 0;
+  padding: clamp(24px, 6vw, 80px);
+  border: 0;
+  background: radial-gradient(ellipse at center, #18302b, #080f0e 75%);
+  color: #f2edde;
+  display: grid;
+  place-items: center;
+  overflow: auto;
+  opacity: 1;
+  transition: opacity 650ms ease;
+}
+.world-opening::backdrop {
+  background: #080f0e;
+}
+.world-opening-leaving {
+  opacity: 0;
+}
+.world-opening-content {
+  width: min(100%, 900px);
+  text-align: center;
+}
+.world-opening-label,
+.world-opening-credit {
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  line-height: 1.8;
+  color: #b9bca4;
+}
+.world-opening h1 {
+  position: relative;
+  margin: 32px 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(27px, 4.5vw, 55px);
+  font-weight: 400;
+  line-height: 1.45;
+  letter-spacing: -0.02em;
+  white-space: pre-wrap;
+}
+.world-opening-spacer {
+  visibility: hidden;
+}
+.world-opening-type {
+  position: absolute;
+  inset: 0;
+}
+.world-opening-cursor {
+  color: #eb7597;
+  font-size: 0.7em;
+  animation: opening-cursor 800ms steps(1) infinite;
+}
+.world-opening-actions {
+  position: absolute;
+  bottom: max(24px, env(safe-area-inset-bottom));
+  left: clamp(24px, 6vw, 80px);
+  right: clamp(24px, 6vw, 80px);
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+.world-opening-actions a,
+.world-opening-actions button {
+  background: transparent;
+  color: #e0ddcc;
+  border: 0;
+  padding: 12px 0;
+  font-size: 14px;
+  text-decoration: none;
+  cursor: pointer;
+}
+.world-opening-actions :focus-visible {
+  outline: 2px solid #eb7597;
+  outline-offset: 5px;
+}
+.world-invitation-reveal > :not(.world-invite-stage) {
+  animation: invitation-details 650ms 1.8s both;
+}
+@keyframes opening-cursor {
+  50% {
+    opacity: 0;
+  }
+}
+@keyframes invitation-details {
+  from {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .world-opening {
+    transition: none;
+  }
+  .world-opening-cursor {
+    animation: none;
+    display: none;
+  }
+  .world-invitation-reveal > :not(.world-invite-stage) {
+    animation: none;
+  }
+}
+@media (max-height: 480px) {
+  .world-opening {
+    padding-top: 20px;
+    padding-bottom: 80px;
+  }
+  .world-opening h1 {
+    font-size: 24px;
+    margin: 12px 0;
+  }
+  .world-opening-credit {
+    display: none;
+  }
+}

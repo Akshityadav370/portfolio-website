@@ -2,7 +2,14 @@
 import { projectsForTools, EXHIBITS } from "@/lib/world/exhibits";
 import CopyEmailButton from "@/components/CopyEmailButton";
 import InvitationCard from "./InvitationCard";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import OpeningScene from "./OpeningScene";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import {
   profile,
   experience,
@@ -344,6 +351,12 @@ export default function WorldExperience() {
     [cameraSensitivity, setCameraSensitivity] = useState(1),
     [cameraFollow, setCameraFollow] = useState(true),
     [stick, setStick] = useState({ x: 0, y: 0 });
+  const [opening, setOpening] = useState<"quote" | "arrival" | "ready">(
+    "quote",
+  );
+  const completeOpening = useCallback((skipped: boolean) => {
+    setOpening(skipped ? "ready" : "arrival");
+  }, []);
   const screenRef = useRef<Screen>("invitation");
   useEffect(() => {
     let cancelled = false;
@@ -736,13 +749,19 @@ export default function WorldExperience() {
           </div>
         </>
       )}
-      {(screen === "invitation" || failed) && (
+      {opening === "quote" && <OpeningScene onComplete={completeOpening} />}
+      {opening !== "quote" && (screen === "invitation" || failed) && (
         <Modal title="Welcome to Akshit’s world">
-          <div className="world-invitation">
+          <div
+            className={
+              "world-invitation" +
+              (opening === "arrival" ? " world-invitation-reveal" : "")
+            }
+          >
             <p className="world-kicker">
               AN INTERACTIVE PORTFOLIO BY AKSHIT YADAV
             </p>
-            <InvitationCard />
+            <InvitationCard animate={opening === "arrival"} />
             <h1>
               Build. Break.
               <br />

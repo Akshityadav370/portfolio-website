@@ -1,24 +1,16 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-
-export default function InvitationCard() {
-  const card = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    let firstVisit = true;
-    try {
-      firstVisit = localStorage.getItem("portfolio-invitation-seen") !== "1";
-      localStorage.setItem("portfolio-invitation-seen", "1");
-    } catch {
-      // The invitation still works when browser storage is unavailable.
-    }
-    if (firstVisit) card.current?.classList.add("world-invite-arriving");
-  }, []);
+export default function InvitationCard({
+  animate = true,
+}: {
+  animate?: boolean;
+}) {
   return (
     <div className="world-invite-stage">
       <div
-        ref={card}
-        className="world-invite-card"
+        className={
+          "world-invite-card" + (animate ? " world-invite-arriving" : "")
+        }
         role="img"
         aria-label="Kraft invitation card with circle, triangle, and square"
       >
