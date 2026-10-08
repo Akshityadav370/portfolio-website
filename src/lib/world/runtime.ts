@@ -142,17 +142,24 @@ export function createWorld(
     walkTime = 0,
     landing = 0;
   const playerMaterials: THREE.Material[] = [];
-  world.player.group.traverse((o) => {
-    if (o instanceof THREE.Mesh) {
+  const preparedPlayerMeshes = new WeakSet<THREE.Mesh>();
+  function collectPlayerMaterials(cloneShared = false) {
+    world.player.group.traverse((o) => {
+      if (!(o instanceof THREE.Mesh) || preparedPlayerMeshes.has(o)) return;
+      preparedPlayerMeshes.add(o);
       const clone = (m: THREE.Material) => {
-        const own = m.clone();
+        const own = cloneShared ? m.clone() : m;
         playerMaterials.push(own);
         return own;
       };
       o.material = Array.isArray(o.material)
         ? o.material.map(clone)
         : clone(o.material);
-    }
+    });
+  }
+  collectPlayerMaterials(true);
+  void Promise.all(world.assetPromises).then(() => {
+    if (!disposed) collectPlayerMaterials();
   });
   let cameraFirst = true;
   let nearest: (typeof POIS)[number] | null = null,
@@ -831,6 +838,7 @@ export function createWorld(
       cancelAnimationFrame(frame);
       observer.disconnect();
       audio.dispose();
+      world.player.dispose();
       host.removeEventListener("keydown", keydown);
       window.removeEventListener("keyup", keyup);
       host.removeEventListener("pointerdown", down);

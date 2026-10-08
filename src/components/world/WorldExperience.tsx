@@ -2,7 +2,14 @@
 import { projectsForTools, EXHIBITS } from "@/lib/world/exhibits";
 import CopyEmailButton from "@/components/CopyEmailButton";
 import InvitationCard from "./InvitationCard";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import OpeningScene from "./OpeningScene";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import {
   profile,
   experience,
@@ -13,6 +20,8 @@ import {
 } from "@/data/resume";
 import {
   ZONES,
+  zoneLabel,
+  WORLD_PATHS,
   RED_LIGHT_TIME_LIMIT,
   eliminationDelay,
   type GameId,
@@ -57,10 +66,12 @@ function Modal({
   title,
   children,
   close,
+  cinematic = false,
 }: {
   title: string;
   children: ReactNode;
   close?: () => void;
+  cinematic?: boolean;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {
@@ -70,7 +81,7 @@ function Modal({
   }, []);
   return (
     <dialog
-      className="world-dialog"
+      className={"world-dialog" + (cinematic ? " world-dialog-scene" : "")}
       ref={ref}
       aria-label={title}
       onCancel={(e) => {
@@ -94,7 +105,7 @@ function Dossier({ zone, index }: { zone: ZoneId; index?: number }) {
   if (zone === "career")
     return (
       <>
-        <p className="world-kicker">02 / THE STAIRCASE</p>
+        <p className="world-kicker">{zoneLabel("career")}</p>
         <h2>Every step counts.</h2>
         {experience
           .filter((_, i) => index === undefined || i === index)
@@ -125,15 +136,15 @@ function Dossier({ zone, index }: { zone: ZoneId; index?: number }) {
   if (zone === "projects")
     return (
       <>
-        <p className="world-kicker">03 / THE CONTROL ROOM</p>
-        <h2>Behind the screens.</h2>
-        <p>Open a feed to inspect the work.</p>
+        <p className="world-kicker">{zoneLabel("projects")}</p>
+        <h2>Less “what if.” More “it works.”</h2>
+        <p>A few ideas I stopped talking about and started building.</p>
         {projects
           .filter((_, i) => index === undefined || i === index)
           .map((project, i) => (
             <details className="world-record" key={project.name} open={i === 0}>
               <summary>
-                <span>FEED 0{i + 1}</span>
+                <span>PROJECT 0{i + 1}</span>
                 <h3>{project.name}</h3>
                 <span>＋</span>
               </summary>
@@ -171,7 +182,7 @@ function Dossier({ zone, index }: { zone: ZoneId; index?: number }) {
   if (zone === "skills")
     return (
       <>
-        <p className="world-kicker">04 / THE EQUIPMENT ROOM</p>
+        <p className="world-kicker">{zoneLabel("skills")}</p>
         <h2>Tools for the next level.</h2>
         <p>The stack behind the web, mobile, and AI products.</p>
         <div className="world-skill-grid">
@@ -191,7 +202,7 @@ function Dossier({ zone, index }: { zone: ZoneId; index?: number }) {
   if (zone === "contact")
     return (
       <>
-        <p className="world-kicker">08 / THE NEXT CHAPTER</p>
+        <p className="world-kicker">{zoneLabel("contact")}</p>
         <h2>
           Let’s build
           <br />
@@ -217,7 +228,7 @@ function Dossier({ zone, index }: { zone: ZoneId; index?: number }) {
     );
   return (
     <>
-      <p className="world-kicker">01 / THE DORMITORY · PARTICIPANT RECORD</p>
+      <p className="world-kicker">{zoneLabel("dormitory")}</p>
       <div className="world-player-number">
         370<span>AKSHIT YADAV AESHAM</span>
       </div>
@@ -259,15 +270,24 @@ function MiniMap({
       className={large ? "world-map-large" : "world-minimap"}
       viewBox="-47 -49 94 110"
       role="img"
-      aria-label="Compound map. North is up."
+      aria-label="World map. North is up."
     >
       <rect x="-46" y="-47" width="92" height="106" rx="5" fill="#244540" />
-      <path
-        d="M0 -42V53 M-40 -4H40 M-40 25H40 M-40 49H40 M-28 -40V45 M25 -35V49"
-        stroke="#64847b"
-        strokeWidth="3"
-        fill="none"
-      />
+      {WORLD_PATHS.map((route, index) => (
+        <polyline
+          key={index}
+          points={route.points.map(([x, z]) => [x, z].join(",")).join(" ")}
+          stroke={
+            route.district === "games"
+              ? "#bc6983"
+              : route.district === "work"
+                ? "#87bdb1"
+                : "#e6dabb"
+          }
+          strokeWidth="2.5"
+          fill="none"
+        />
+      ))}
       {ZONES.map((zone, i) => (
         <g
           key={zone.id}
@@ -296,6 +316,15 @@ function MiniMap({
           )}
         </g>
       ))}
+      <g>
+        <title>Credits courtyard · beside Contact</title>
+        <circle cx="33" cy="44" r="1.8" fill="#e8c879" />
+        {large && (
+          <text x="33" y="50" textAnchor="middle" fill="#e8c879" fontSize="2.4">
+            CREDITS
+          </text>
+        )}
+      </g>
       {snapshot && (
         <g
           transform={`translate(${snapshot.x} ${snapshot.z}) rotate(${(-snapshot.yaw * 180) / Math.PI})`}
@@ -324,6 +353,12 @@ export default function WorldExperience() {
     [cameraSensitivity, setCameraSensitivity] = useState(1),
     [cameraFollow, setCameraFollow] = useState(true),
     [stick, setStick] = useState({ x: 0, y: 0 });
+  const [opening, setOpening] = useState<"quote" | "arrival" | "ready">(
+    "quote",
+  );
+  const completeOpening = useCallback((skipped: boolean) => {
+    setOpening(skipped ? "ready" : "arrival");
+  }, []);
   const screenRef = useRef<Screen>("invitation");
   useEffect(() => {
     let cancelled = false;
@@ -430,10 +465,10 @@ export default function WorldExperience() {
               <a
                 className="world-spa-link"
                 href="/portfolio"
-                aria-label="Go to SPA portfolio"
-                title="Go to SPA portfolio (Esc releases the cursor)"
+                aria-label="Open classic portfolio"
+                title="Open classic portfolio (Esc releases the cursor)"
               >
-                SPA ↗
+                Classic portfolio ↗
               </a>
               <button onClick={() => setScreen("map")} aria-label="Open map">
                 Map <kbd>M</kbd>
@@ -461,10 +496,12 @@ export default function WorldExperience() {
           </header>
           {!trial && !snapshot?.exhibit && (
             <div className="world-objective">
-              <span className="world-kicker">YOUR NEXT CHAPTER</span>
-              <h1>Make yourself at home.</h1>
+              <span className="world-kicker">CURIOSITY LOOKS GOOD ON YOU</span>
+              <h1>Follow your curiosity.</h1>
               <p>
-                Find the glowing objects. Press E to open, power on, or pick up.
+                {snapshot?.zone === "dormitory"
+                  ? "Base Camp is straight ahead — come say hello. Teal paths lead to work; pink paths to games. Press E to interact, or M for the map."
+                  : "Explore the glowing markers here. Press E to interact. Follow teal paths for work, pink paths for games, or press M for the map."}
               </p>
               <small>
                 {snapshot?.discovered.length ?? 0} / 8 PLACES DISCOVERED
@@ -517,9 +554,7 @@ export default function WorldExperience() {
                     </a>
                   ))}
                   {projectsForTools(snapshot.exhibit.tools).length === 0 && (
-                    <p>
-                      See the experience archive for work with this toolkit.
-                    </p>
+                    <p>Visit the Level-Up Log to see these skills at work.</p>
                   )}
                 </div>
               )}
@@ -652,7 +687,7 @@ export default function WorldExperience() {
           <button
             className="world-map-button"
             onClick={() => setScreen("map")}
-            aria-label="Open compound map"
+            aria-label="Open world map"
           >
             <MiniMap snapshot={snapshot} />
             <span>COMPOUND / M</span>
@@ -716,22 +751,40 @@ export default function WorldExperience() {
           </div>
         </>
       )}
-      {(screen === "invitation" || failed) && (
-        <Modal title="An invitation to Player 370’s world">
-          <div className="world-invitation">
+      {opening === "quote" && <OpeningScene onComplete={completeOpening} />}
+      {opening !== "quote" && (screen === "invitation" || failed) && (
+        <Modal
+          title="Welcome to Akshit’s world"
+          cinematic={opening === "arrival"}
+        >
+          <div
+            className={
+              "world-invitation" +
+              (opening === "arrival" ? " world-invitation-reveal" : "")
+            }
+          >
             <p className="world-kicker">
               AN INTERACTIVE PORTFOLIO BY AKSHIT YADAV
             </p>
-            <InvitationCard />
+            <InvitationCard animate={opening === "arrival"} />
             <h1>
-              Your story
+              Build. Break.
               <br />
-              starts here.
+              Come back better.
             </h1>
-            <p>One portfolio. Two ways to explore.</p>
+            <aside
+              className="world-invite-note"
+              aria-label="A note from Akshit"
+            >
+              <span>A NOTE FROM AKSHIT</span>
+              <p>
+                Big dreams. Small commits. A few dramatic sighs.
+                <br />I keep building anyway.
+              </p>
+            </aside>
             <div className="world-entry-choices">
               <button disabled={!ready || failed} onClick={enter}>
-                <span>01 / THE EXPERIENCE</span>
+                <span>01 / TAKE THE SCENIC ROUTE</span>
                 <strong>
                   {failed
                     ? "3D unavailable"
@@ -739,18 +792,22 @@ export default function WorldExperience() {
                       ? "Explore the 3D world ↗"
                       : "Preparing the 3D world…"}
                 </strong>
-                <small>Walk, discover, and play.</small>
+                <small>
+                  Meet the builder. Explore the work. Try not to get eliminated.
+                </small>
               </button>
               <a href="/portfolio">
-                <span>02 / THE WORK</span>
-                <strong>Explore the SPA ↗</strong>
-                <small>A quick read of my work and experience.</small>
+                <span>02 / GET TO KNOW ME</span>
+                <strong>Read my portfolio ↗</strong>
+                <small>
+                  Projects, experience, and skills. No walking required.
+                </small>
               </a>
             </div>
             {failed && (
               <p>
-                The 3D world couldn’t start on this device. The SPA is ready to
-                explore.
+                The 3D world couldn’t start on this device. You can still read
+                my classic portfolio.
               </p>
             )}
             <div className="world-invite-options">
@@ -767,13 +824,16 @@ export default function WorldExperience() {
         </Modal>
       )}
       {screen === "map" && !failed && (
-        <Modal title="Compound map" close={enter}>
+        <Modal title="World map" close={enter}>
           <p className="world-kicker">
-            FIELD GUIDE / {snapshot?.discovered.length ?? 0} OF 8 DISCOVERED
+            YOUR EXPLORATION / {snapshot?.discovered.length ?? 0} OF 8
+            DISCOVERED
           </p>
-          <h2>A world to wander.</h2>
+          <h2>Pick your next stop.</h2>
           <p>
-            Walk between locations, or choose a destination to travel there.
+            Teal paths connect the portfolio. Pink paths lead to the games.
+            Numbers match the signs in the world. Choose any destination to
+            travel there.
           </p>
           <div className="world-map-layout">
             <MiniMap snapshot={snapshot} large onTravel={travel} />
@@ -881,7 +941,7 @@ export default function WorldExperience() {
             <button onClick={() => setScreen("map")}>
               Open map / recover position
             </button>
-            <a href="/portfolio">Go to SPA portfolio ↗</a>
+            <a href="/portfolio">Open classic portfolio ↗</a>
           </div>
           <p className="world-help">
             Move your mouse to look around. Click the world to capture the
@@ -916,7 +976,7 @@ export default function WorldExperience() {
       )}
       {screen === "dossier" && !failed && (
         <Modal
-          title={ZONES.find((z) => z.id === selected)?.name ?? "Player file"}
+          title={ZONES.find((z) => z.id === selected)?.name ?? "About Akshit"}
           close={enter}
         >
           {snapshot?.exhibit?.kind === "beacon" ? (
@@ -931,7 +991,26 @@ export default function WorldExperience() {
                 The exploration soundtrack is an original ambient composition.
                 The textured boulder is a CC0 asset from Poly Haven.
               </p>
+              <p>
+                Tommy Vercetti model by jak218984, adapted with animation
+                changes, under{" "}
+                <a
+                  href="https://creativecommons.org/licenses/by/4.0/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  CC BY 4.0
+                </a>
+                .
+              </p>
               <div className="world-link-row">
+                <a
+                  href="https://sketchfab.com/3d-models/tommy-vercetti-7316bd1cee854c31b55121b66b97045f"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Character credit · jak218984 ↗
+                </a>
                 <a
                   href="https://polyhaven.com/a/boulder_01"
                   target="_blank"

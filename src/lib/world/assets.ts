@@ -1,9 +1,12 @@
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+import { createPlayerAvatar } from "./player-avatar";
 import { EXHIBITS } from "./exhibits";
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import {
+  WORLD_PATHS,
+  zoneLabel,
   MINGLE_ROOMS,
   POIS,
   ropeSag,
@@ -302,16 +305,37 @@ export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
   floor.position.set(0, -0.06, 5);
   floor.receiveShadow = true;
   root.add(floor);
-  // Walkways tie every destination to the same physical compound.
-  box(root, 0, -0.015, 5, 6, 0.04, 96, palette.cream);
-  for (const z of [-4, 25, 49])
-    box(root, 0, -0.01, z, 82, 0.04, 4, palette.cream);
-  for (const x of [-28, 25])
-    box(root, x, -0.015, 13, 4, 0.04, 73, palette.cream);
-  for (let i = -40; i < 54; i += 4) {
-    box(root, -2.85, 0.014, i, 0.07, 0.018, 1.4, palette.rose);
-    box(root, 2.85, 0.014, i, 0.07, 0.018, 1.4, palette.rose);
+  // Colored inlays connect real entrances without crossing building walls.
+  for (const route of WORLD_PATHS) {
+    for (let i = 1; i < route.points.length; i++) {
+      const [ax, az] = route.points[i - 1],
+        [bx, bz] = route.points[i];
+      const horizontal = az === bz;
+      const length = Math.abs(horizontal ? bx - ax : bz - az);
+      box(
+        root,
+        (ax + bx) / 2,
+        -0.015,
+        (az + bz) / 2,
+        horizontal ? length + 3 : 3,
+        0.04,
+        horizontal ? 3 : length + 3,
+        palette.cream,
+      );
+      if (route.district !== "shared")
+        box(
+          root,
+          (ax + bx) / 2,
+          0.012,
+          (az + bz) / 2,
+          horizontal ? length : 0.12,
+          0.012,
+          horizontal ? 0.12 : length,
+          route.district === "games" ? palette.rose : palette.teal,
+        );
+    }
   }
+  box(root, 0, -0.018, 9, 13, 0.035, 5, palette.cream);
   for (const x of [-45, 45]) box(root, x, 3, 5, 1, 6, 105, palette.pink, true);
   box(root, 0, 3, -46, 91, 6, 1, palette.blue, true);
   box(root, 0, 3, 57, 91, 6, 1, palette.blue, true);
@@ -320,9 +344,8 @@ export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
   box(root, 8, 3, 0, 0.4, 6, 12, palette.pink, true);
   for (const x of [-5, 5]) box(root, x, 3, -6, 6, 6, 0.4, palette.pink, true);
   box(root, 0, 5.5, -6, 4, 1, 0.4, palette.pink, true);
-  sign(root, "THE DORMITORY", 0, 4.7, -5.76, 5.5, 1);
-  sign(root, "WELCOME, PLAYER 370", 0, 2.2, -0.9, 3, 0.68);
-  box(root, 0, 0.55, -1, 3, 1.1, 0.6, palette.dark, true);
+  sign(root, zoneLabel("dormitory"), 0, 4.7, -5.76, 5.5, 1);
+  box(root, -4, 0.55, -1, 3, 1.1, 0.6, palette.dark, true);
   for (const x of [-5.5, 5.5])
     for (const z of [-3.4, 1.1]) {
       for (const dx of [-0.7, 0.7])
@@ -374,7 +397,7 @@ export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
     );
   }
   box(root, 0, 6.2, -27.5, 10, 4, 0.4, palette.pink, true);
-  sign(root, "EVERY LEVEL COUNTS", 0, 6.5, -27.2, 6, 1.1);
+  sign(root, zoneLabel("career"), 0, 6.5, -27.2, 6, 1.1);
   for (const x of [-6.5, 6.5]) {
     box(root, x, 3, -24, 3.5, 6, 7, palette.mint, true);
     for (let i = 0; i < 8; i++)
@@ -391,13 +414,13 @@ export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
     sign(root, title, x, 5.48, z + 6.24, 8, 1.0);
     box(root, x, 0.018, z, 16.7, 0.035, 11.7, palette.cream);
   }
-  building(25, -15, "THE CONTROL ROOM", palette.blue);
+  building(25, -15, zoneLabel("projects"), palette.blue);
   for (let i = 0; i < 5; i++) {
     const x = 19 + i * 3;
     box(root, x, 2.35, -19, 2.4, 1.65, 0.35, palette.dark, true);
     sign(
       root,
-      ["AI BUILDER", "DINEDASH", "MYMIRO", "LIFENODE", "STORY ENGINE"][i],
+      EXHIBITS.filter((exhibit) => exhibit.kind === "screen")[i].label,
       x,
       2.4,
       -18.8,
@@ -408,7 +431,7 @@ export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
     );
     box(root, x, 0.8, -18, 2.65, 1.6, 1.5, palette.dark, true);
   }
-  building(25, 13, "THE EQUIPMENT ROOM", palette.mint);
+  building(25, 13, zoneLabel("skills"), palette.mint);
   for (const x of [19, 22, 28, 31]) {
     box(root, x, 1.7, 8, 2.1, 3.4, 1, palette.teal, true);
     sign(
@@ -423,7 +446,7 @@ export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
     for (let i = 0; i < 3; i++)
       box(root, x, 1 + i * 0.5, 8.52, 1.5, 0.06, 0.02, palette.cream);
   }
-  sign(root, "TOOLS WITH A TRACK RECORD", 25, 2.5, 10, 4, 0.8);
+  sign(root, "SOME ASSEMBLY REQUIRED", 25, 2.5, 10, 4, 0.8);
   // Red Light arena, walkable end to end.
   box(root, -28, 0.025, -23, 19, 0.05, 32, palette.sand);
   for (const x of [-38, -18])
@@ -431,7 +454,7 @@ export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
   box(root, -28, 2.8, -39, 20, 5.6, 0.4, palette.blue, true);
   for (const x of [-34.6, -21.4])
     box(root, x, 2.3, -7, 7, 4.6, 0.4, palette.pink, true);
-  sign(root, "RED LIGHT, GREEN LIGHT", -36, 4.0, -6.7, 6, 1);
+  sign(root, zoneLabel("red-light"), -36, 4.0, -6.7, 6, 1);
   for (let i = 0; i < 6; i++)
     box(root, -35.5 + i * 3, 0.061, -23, 0.035, 0.012, 27, palette.cream);
   box(root, -28, 0.069, -34, 18, 0.014, 0.13, palette.rose);
@@ -786,7 +809,7 @@ export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
       npc.group.position.y = 0.08;
     }
   }
-  sign(root, "MINGLE / ROUND AND ROUND", -28, 5.6, 7.5, 9, 1.1);
+  sign(root, zoneLabel("mingle"), -28, 5.6, 7.5, 9, 1.1);
   // Sky bridge, ramp, real pit, and movable rope checkpoint.
   box(root, 0, -2.8, 36, 10, 0.15, 19, palette.dark);
   box(root, 0, 1.85, 36.5, 3.8, 0.3, 19, palette.cream);
@@ -835,13 +858,13 @@ export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
   marker.rotation.x = -Math.PI / 2;
   marker.position.y = 2.04;
   ropeRig.add(marker);
-  sign(root, "JUMP ROPE / THE SKY BRIDGE", 0, 4.5, 51.5, 9, 1.1);
+  sign(root, zoneLabel("jump-rope"), 0, 4.5, 51.5, 9, 1.1);
   // The exit is a contact destination, never a gate out of the experience.
   for (const x of [21, 29]) box(root, x, 3, 36, 0.8, 6, 3, palette.pink, true);
   box(root, 25, 6, 36, 9, 0.8, 3, palette.pink, true);
-  sign(root, "THE NEXT CHAPTER", 25, 5.6, 37.6, 7, 1);
+  sign(root, zoneLabel("contact"), 25, 5.6, 37.6, 7, 1);
   box(root, 25, 0.035, 38, 9, 0.07, 8, palette.cream);
-  sign(root, "LET’S BUILD SOMETHING", 25, 2.6, 35.5, 6, 0.9);
+  sign(root, "GOOD IDEAS LOVE COMPANY", 25, 2.6, 35.5, 6, 0.9);
   for (const poi of POIS) {
     const ring = new THREE.Mesh(
       new THREE.RingGeometry(0.9, 1.02, 32),
@@ -876,14 +899,41 @@ export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
     [-13, 25],
     [13, 25],
     [-12, -8],
-    [12, -8],
+    [10, -8],
     [18, 30],
   ]) {
     cylinder(root, x, 2, z, 0.08, 4, palette.dark);
     sphere(root, x, 4.1, z, 0.3, palette.cream);
   }
-  sign(root, "← GAMES   /   WORK →", 9.8, 2.8, 9, 4.5, 0.7);
-  cylinder(root, 9.8, 1.2, 8.95, 0.08, 2.4, palette.dark);
+  function wayfinder(x: number, z: number, text: string, work: boolean) {
+    cylinder(root, x, 1.1, z - 0.05, 0.055, 2.2, palette.dark);
+    sign(root, text, x, 2.35, z, 3.8, 0.6, work ? "#174b48" : "#70283f");
+    const reverse = text.replace(/[←→]/g, (arrow) =>
+      arrow === "←" ? "→" : "←",
+    );
+    sign(
+      root,
+      reverse,
+      x,
+      2.35,
+      z - 0.04,
+      3.8,
+      0.6,
+      work ? "#174b48" : "#70283f",
+    ).mesh.rotation.y = Math.PI;
+  }
+  wayfinder(-5.8, 7.5, "GAMES / WEST WING", false);
+  wayfinder(5.8, 7.5, "PORTFOLIO / EAST WING", true);
+  wayfinder(14.8, -6, zoneLabel("projects") + " →", true);
+  wayfinder(14.8, 25, zoneLabel("skills") + " →", true);
+  wayfinder(14.8, 47, zoneLabel("contact") + " →", true);
+  wayfinder(-14.8, -2, "← " + zoneLabel("red-light"), false);
+  wayfinder(-14.8, 31, "← " + zoneLabel("mingle"), false);
+  wayfinder(-7, 51.5, zoneLabel("jump-rope") + " →", false);
+  // A quiet credits courtyard beside the departure lounge.
+  box(root, 33, -0.01, 43.5, 5, 0.04, 5, palette.cream);
+  box(root, 36, 0.45, 43, 0.8, 0.9, 3, palette.wood, true);
+  box(root, 36.35, 0.95, 43, 0.15, 0.9, 3, palette.wood, true);
   // Hinged props stay separate from merged scenery so they can respond to the player.
   const exhibitProps = EXHIBITS.map((exhibit) => {
     const group = new THREE.Group();
@@ -1119,7 +1169,7 @@ export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
       const points =
         type === 0
           ? [
-              [-12, 2],
+              [-15, 2],
               [13, -29],
               [38, -4],
               [-41, 31],
@@ -1131,14 +1181,14 @@ export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
                 [-40, -42],
                 [39, -35],
                 [-12, -35],
-                [12, 49],
+                [16, 51],
                 [39, 26],
               ]
             : type === 2
               ? [
-                  [-12, 3],
-                  [-13, 1],
-                  [13, 4],
+                  [-15, 4],
+                  [-16, 1],
+                  [15, 4],
                   [36, 6],
                   [38, 8],
                   [-40, 34],
@@ -1172,7 +1222,41 @@ export function buildWorld(scene: THREE.Scene, isDisposed: () => boolean) {
         /* Core world does not depend on decorative assets. */
       }),
     );
-  const player = character(dynamic, 0, 7);
+  const fallback = character(dynamic, 0, 7);
+  // Keep the controller group stable while the visual loads asynchronously.
+  const group = new THREE.Group();
+  group.position.copy(fallback.group.position);
+  fallback.group.position.set(0, 0, 0);
+  group.add(fallback.group);
+  dynamic.add(group);
+  let avatar: ReturnType<typeof createPlayerAvatar> | undefined;
+  const player = {
+    group,
+    animate: (...args: Parameters<typeof fallback.animate>) =>
+      (avatar ?? fallback).animate(...args),
+    dispose: () => avatar?.dispose(),
+  };
+  assetPromises.push(
+    new GLTFLoader()
+      .loadAsync("/models/tommy_vercetti.glb")
+      .then((gltf) => {
+        if (isDisposed()) {
+          disposeObject(gltf.scene);
+          return;
+        }
+        try {
+          avatar = createPlayerAvatar(gltf);
+          fallback.group.visible = false;
+          group.add(avatar.visual);
+        } catch (error) {
+          disposeObject(gltf.scene);
+          throw error;
+        }
+      })
+      .catch((error) =>
+        console.warn("Could not load Tommy; using the original player.", error),
+      ),
+  );
   player.group.rotation.y = Math.PI;
   return {
     player,

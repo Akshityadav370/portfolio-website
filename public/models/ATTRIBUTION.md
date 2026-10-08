@@ -32,3 +32,19 @@ The compound architecture, controllable tracksuit character, guards, doll, carou
 To also repackage the boulder, pass a directory containing the downloaded
 `boulder.gltf` and its relative dependencies to the generator. Models load
 asynchronously and share geometry/materials across instances.
+
+## Player character
+
+- `tommy_vercetti.glb`: **Tommy vercetti**, by **jak218984**.
+  Source: https://sketchfab.com/3d-models/tommy-vercetti-7316bd1cee854c31b55121b66b97045f
+  Author: https://sketchfab.com/jak218984
+  License recorded in the supplied GLB: **CC BY 4.0**,
+  https://creativecommons.org/licenses/by/4.0/
+  Supplied by the site owner on 2026-10-07. Original file retained unchanged.
+  Runtime adaptations: resize to 1.8 metres, ground alignment, loop the initial
+  walking stride, remove horizontal root motion and rebase vertical motion,
+  add idle/jump/fall poses and animation blending. The walk is accelerated
+  for running; a separate authored sprint animation is not included.
+  Tommy Vercetti is a Grand Theft Auto character; this portfolio is not
+  affiliated with or endorsed by Rockstar Games.
+  Attribution is also accessible through the world's interactive credits beacon.
