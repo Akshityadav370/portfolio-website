@@ -66,10 +66,12 @@ function Modal({
   title,
   children,
   close,
+  cinematic = false,
 }: {
   title: string;
   children: ReactNode;
   close?: () => void;
+  cinematic?: boolean;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {
@@ -79,7 +81,7 @@ function Modal({
   }, []);
   return (
     <dialog
-      className="world-dialog"
+      className={"world-dialog" + (cinematic ? " world-dialog-scene" : "")}
       ref={ref}
       aria-label={title}
       onCancel={(e) => {
@@ -751,7 +753,10 @@ export default function WorldExperience() {
       )}
       {opening === "quote" && <OpeningScene onComplete={completeOpening} />}
       {opening !== "quote" && (screen === "invitation" || failed) && (
-        <Modal title="Welcome to Akshit’s world">
+        <Modal
+          title="Welcome to Akshit’s world"
+          cinematic={opening === "arrival"}
+        >
           <div
             className={
               "world-invitation" +

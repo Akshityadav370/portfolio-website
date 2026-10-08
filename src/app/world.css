@@ -1209,7 +1209,7 @@
   color: #23473d;
 }
 
-/* A quiet opening frame, followed by the invitation's physical arrival. */
+/* A letterboxed prologue with a fixed typographic composition. */
 .world-opening {
   position: fixed;
   inset: 0;
@@ -1218,60 +1218,144 @@
   height: 100%;
   max-height: none;
   margin: 0;
-  padding: clamp(24px, 6vw, 80px);
+  padding: 110px clamp(28px, 9vw, 150px);
   border: 0;
-  background: radial-gradient(ellipse at center, #18302b, #080f0e 75%);
-  color: #f2edde;
+  background: #080c0d;
+  color: #eee9df;
   display: grid;
   place-items: center;
   overflow: auto;
+  isolation: isolate;
   opacity: 1;
-  transition: opacity 650ms ease;
+  transition: opacity 900ms ease;
+  box-shadow:
+    inset 0 38px #030506,
+    inset 0 -38px #030506;
 }
 .world-opening::backdrop {
-  background: #080f0e;
+  background: #030506;
 }
 .world-opening-leaving {
   opacity: 0;
 }
+.world-opening-atmosphere {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 82% 40%, #80613d26, transparent 50%),
+    radial-gradient(ellipse at 8% 80%, #244e4738, transparent 65%),
+    repeating-linear-gradient(
+      0deg,
+      #ffffff03 0px,
+      #ffffff03 1px,
+      transparent 1px,
+      transparent 4px
+    );
+}
+.world-opening-masthead {
+  position: absolute;
+  top: 65px;
+  left: clamp(28px, 9vw, 150px);
+  right: clamp(28px, 9vw, 150px);
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  font-size: 10px;
+  letter-spacing: 0.23em;
+  color: #939993;
+}
 .world-opening-content {
-  width: min(100%, 900px);
-  text-align: center;
+  width: min(100%, 1040px);
+  text-align: left;
 }
 .world-opening-label,
 .world-opening-credit {
-  font-size: 11px;
-  letter-spacing: 0.22em;
+  font-size: 10px;
+  letter-spacing: 0.25em;
   line-height: 1.8;
-  color: #b9bca4;
+  color: #a8aaa0;
+}
+.world-opening-label {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 0 0 26px;
+}
+.world-opening-label > span:first-child {
+  height: 1px;
+  width: 36px;
+  background: #c6a573;
+}
+.world-opening-symbols {
+  margin-left: auto;
+  color: #c6a573;
+  letter-spacing: 0.5em;
 }
 .world-opening h1 {
-  position: relative;
-  margin: 32px 0;
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(27px, 4.5vw, 55px);
-  font-weight: 400;
-  line-height: 1.45;
-  letter-spacing: -0.02em;
-  white-space: pre-wrap;
+  margin: 0;
+  min-height: 250px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: clamp(24px, 3.5vw, 48px);
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: -0.035em;
 }
-.world-opening-spacer {
-  visibility: hidden;
+.world-opening-line {
+  display: block;
 }
-.world-opening-type {
-  position: absolute;
-  inset: 0;
+.world-opening-word {
+  display: inline-block;
+  white-space: pre;
 }
-.world-opening-cursor {
+.world-opening-accent {
   color: #eb7597;
-  font-size: 0.7em;
-  animation: opening-cursor 800ms steps(1) infinite;
+}
+.world-opening-word > span {
+  opacity: 0;
+  filter: blur(3px);
+  transition:
+    opacity 220ms ease,
+    filter 350ms ease;
+}
+.world-opening-word > .is-revealed {
+  opacity: 1;
+  filter: blur(0);
+}
+.world-opening-ending {
+  margin-top: 18px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(40px, 7vw, 94px);
+  font-weight: 400;
+  font-style: italic;
+  line-height: 1.15;
+  letter-spacing: -0.055em;
+  color: #dfc49a;
+}
+.world-opening-rule {
+  margin-top: 35px;
+  height: 1px;
+  background: #ffffff16;
+  max-width: 260px;
+}
+.world-opening-rule > span {
+  display: block;
+  height: 100%;
+  background: #c6a573;
+  transform-origin: left;
+  transition: transform 200ms linear;
+}
+.world-opening-credit {
+  margin: 17px 0 0;
+  font-size: 9px;
+  letter-spacing: 0.18em;
 }
 .world-opening-actions {
   position: absolute;
-  bottom: max(24px, env(safe-area-inset-bottom));
-  left: clamp(24px, 6vw, 80px);
-  right: clamp(24px, 6vw, 80px);
+  bottom: max(55px, env(safe-area-inset-bottom));
+  left: clamp(28px, 9vw, 150px);
+  right: clamp(28px, 9vw, 150px);
   display: flex;
   justify-content: space-between;
   gap: 20px;
@@ -1279,19 +1363,41 @@
 .world-opening-actions a,
 .world-opening-actions button {
   background: transparent;
-  color: #e0ddcc;
+  color: #c4c7be;
   border: 0;
   padding: 12px 0;
-  font-size: 14px;
+  font-size: 12px;
   text-decoration: none;
   cursor: pointer;
 }
+.world-opening-actions button > span {
+  margin-left: 12px;
+  color: #dfc49a;
+}
 .world-opening-actions :focus-visible {
-  outline: 2px solid #eb7597;
-  outline-offset: 5px;
+  outline: 1px solid #dfc49a;
+  outline-offset: 7px;
+}
+@media (max-width: 600px) {
+  .world-opening {
+    padding: 110px 28px;
+  }
+  .world-opening-masthead {
+    top: 58px;
+    font-size: 9px;
+  }
+  .world-opening-masthead span:last-child {
+    display: none;
+  }
+  .world-opening h1 {
+    min-height: 270px;
+  }
+  .world-opening-ending {
+    margin-top: 24px;
+  }
 }
 .world-invitation-reveal > :not(.world-invite-stage) {
-  animation: invitation-details 650ms 1.8s both;
+  animation: invitation-details 650ms 2.6s both;
 }
 @keyframes opening-cursor {
   50% {
@@ -1314,9 +1420,10 @@
   .world-opening {
     transition: none;
   }
-  .world-opening-cursor {
-    animation: none;
-    display: none;
+  .world-opening-word > span,
+  .world-opening-rule > span {
+    transition: none;
+    filter: none;
   }
   .world-invitation-reveal > :not(.world-invite-stage) {
     animation: none;
@@ -1324,14 +1431,73 @@
 }
 @media (max-height: 480px) {
   .world-opening {
-    padding-top: 20px;
-    padding-bottom: 80px;
+    padding-top: 65px;
+    padding-bottom: 65px;
+    box-shadow: none;
   }
   .world-opening h1 {
-    font-size: 24px;
-    margin: 12px 0;
+    font-size: 20px;
+    min-height: 0;
+  }
+  .world-opening-ending {
+    font-size: 34px;
+    margin-top: 8px;
+  }
+  .world-opening-masthead {
+    top: 20px;
+  }
+  .world-opening-actions {
+    bottom: 12px;
+  }
+  .world-opening-label {
+    margin-bottom: 10px;
+  }
+  .world-opening-rule {
+    margin-top: 14px;
   }
   .world-opening-credit {
     display: none;
+  }
+}
+
+/* Carry the opening's black frame into the next scene instead of cutting away. */
+.world-dialog-scene {
+  animation: invitation-scene-in 800ms ease-out both;
+}
+.world-dialog-scene::backdrop {
+  animation: invitation-backdrop-in 800ms ease-out both;
+}
+.world-dialog-scene .world-invite-arriving {
+  animation-delay: 800ms;
+}
+.world-dialog-scene .world-invite-symbols span {
+  animation-delay: 1100ms;
+}
+.world-dialog-scene .world-invite-symbols span:nth-child(2) {
+  animation-delay: 1250ms;
+}
+.world-dialog-scene .world-invite-symbols span:nth-child(3) {
+  animation-delay: 1400ms;
+}
+@keyframes invitation-scene-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes invitation-backdrop-in {
+  from {
+    background-color: #030506;
+  }
+  to {
+    background-color: #0d2e2d66;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .world-dialog-scene,
+  .world-dialog-scene::backdrop {
+    animation: none;
   }
 }
